@@ -1,0 +1,40 @@
+<div class="container-fluid">
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#/translations/{{project.id}}"><i class="fa fa-angle-double-left"></i> Back</a>
+      </div>
+
+    </div><!-- /.container-fluid -->
+  </nav>
+</div>
+<div class="container-fluid">
+  <ol class="breadcrumb">
+    <li><a href="#/projects">Projects</a></li>
+    <li><a  href="#/translations/{{project.id}}">{{project.name}}</a></li>
+    <li class="active">Hic</li>
+  </ol>
+
+  <form ng-submit="updateProjectTranslations()">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>{{translations[0].code}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="translation in translations">
+            <td><a href="#/translations/by-lang/{{project.id}}/{{translation.language_id}}" role="button">{{translation.language}} ({{translation.iso_code}})</a></td>
+            <td style="width: 80%">
+              <textarea class="form-control" ng-model="translation.value"
+                        placeholder="No translation provided for '{{translation.code}}'"
+                        name="description" id="projectDescription">{{translation.value}}</textarea>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><input type="submit" class="btn btn-primary btn-block" value="Save" /></p>
+  </form>
+</div>

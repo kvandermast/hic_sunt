@@ -1,0 +1,11 @@
+{
+  "name": "hic",
+  "version": "0.0.1",
+  "description": "Hic Sunt Dracones - Used to manage translations",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.3.0",
+    "angular-route": "~1.3.0",
+    "bootstrap": "~3.3.4"
+  }
+}
