@@ -1,7 +1,7 @@
-var express         = require('express');
-var bodyParser      = require('body-parser');
-var morgan          = require('morgan');
-var methodOverride  = require('method-override');
+var express = require('express');
+var bodyParser = require('body-parser');
+var morgan = require('morgan');
+var methodOverride = require('method-override');
 
 var app = express();
 
@@ -15,9 +15,9 @@ app.use(methodOverride());
 
 require('./app/routes.js')(app);
 
-var server = app.listen(8443, function() {
-  var host = server.address().address;
-  var port = server.address().port;
+var server = app.listen(7443, function () {
+    var host = server.address().address;
+    var port = server.address().port;
 
-  console.log('Hic sunt dracones: http://%s:%s', host, port);
+    console.log('Hic sunt dracones: http://%s:%s', host, port);
 });

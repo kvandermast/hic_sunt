@@ -1,92 +1,92 @@
 // require modules
-var mysql       = require('mysql');
-var settings    = require('../settings/settings.js');
+var mysql = require('mysql');
+var settings = require('../settings/settings.js');
 
 // connect to mysql
 var pool = mysql.createPool(settings.mysql);
 
-pool.getConnection(function($err, $connection) {
-  // connected! (unless `err` is set)
+pool.getConnection(function ($err, $connection) {
+    // connected! (unless `err` is set)
 
-  if($connection) {
-    $connection.release();
-  }
+    if ($connection) {
+        $connection.release();
+    }
 
-  if($err) {
-    console.log("==========================================================================================");
-    console.log(" ERROR")
-    console.log("==========================================================================================");
-    console.log("Unable to connect to MySQL instance, please check if the MySQL is running and reachable.");
-    console.log($err);
-    console.log("==========================================================================================");
+    if ($err) {
+        console.log("==========================================================================================");
+        console.log(" ERROR")
+        console.log("==========================================================================================");
+        console.log("Unable to connect to MySQL instance, please check if the MySQL is running and reachable.");
+        console.log($err);
+        console.log("==========================================================================================");
 
-		throw new Error($err);
-  }
+        throw new Error($err);
+    }
 });
 
 
-var one = function($sql, $params, $callback) {
-  console.log("Executing <" + $sql + "> with parameters: " + JSON.stringify($params));
+var one = function ($sql, $params, $callback) {
+    console.log("Executing <" + $sql + "> with parameters: " + JSON.stringify($params));
 
-  pool.getConnection(function(err, connection) {
-    connection.query($sql, $params, function($error, $rows, $fields) {
-      $result = $rows;
+    pool.getConnection(function (err, connection) {
+        connection.query($sql, $params, function ($error, $rows, $fields) {
+            $result = $rows;
 
-      if($error) {
-        console.log($error);
-      }
+            if ($error) {
+                console.log($error);
+            }
 
-      if($result && $result.length > 0) {
-        $result = $result.slice(0, $result.length - 1);
-      }
+            if ($result && $result.length > 0) {
+                $result = $result.slice(0, $result.length - 1);
+            }
 
 
-      if($rows && $rows.length >= 1) {
-        $result = $rows.shift(); //take the first element
-        $result = $result[0];
-      }
+            if ($rows && $rows.length >= 1) {
+                $result = $rows.shift(); //take the first element
+                $result = $result[0];
+            }
 
-      connection.release();
+            connection.release();
 
-      $callback($error, $result, $fields);
+            $callback($error, $result, $fields);
+        });
     });
-  });
 };
 
-var many = function($sql, $params, $callback) {
-	console.log("Executing <" + $sql + "> with parameters: " + JSON.stringify($params));
+var many = function ($sql, $params, $callback) {
+    console.log("Executing <" + $sql + "> with parameters: " + JSON.stringify($params));
 
-  pool.getConnection(function(err, connection) {
-    connection.query($sql, $params, function($error, $rows, $fields) {
-      $result = $rows;
+    pool.getConnection(function (err, connection) {
+        connection.query($sql, $params, function ($error, $rows, $fields) {
+            $result = $rows;
 
-  		if($result) {
-  			if($result.length > 0) {
-  				$result = $result[0]; // $result.slice(0, $result.length - 1);
-  			}
-  		} else {
-  			$result = [];
-  		}
+            if ($result) {
+                if ($result.length > 0) {
+                    $result = $result[0]; // $result.slice(0, $result.length - 1);
+                }
+            } else {
+                $result = [];
 
-      connection.release();
+            }
 
-      $callback($error, $result, $fields);
+            connection.release();
+
+            $callback($error, $result, $fields);
+        });
     });
-  });
 };
 
-var insert = function($sql, $params, $callback) {
-  one($sql, $params, $callback);
+var insert = function ($sql, $params, $callback) {
+    one($sql, $params, $callback);
 }
 
-var remove = function($sql, $params, $callback) {
-  one($sql, $params, $callback);
+var remove = function ($sql, $params, $callback) {
+    one($sql, $params, $callback);
 }
 
-var update = function($sql, $params, $callback) {
-  many($sql, $params, $callback);
+var update = function ($sql, $params, $callback) {
+    many($sql, $params, $callback);
 }
-
 
 
 exports.one = one;

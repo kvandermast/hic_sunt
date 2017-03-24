@@ -27,6 +27,7 @@
     "node-uuid": "^1.4.3",
     "node-xlsx": "^0.5.1",
     "npm": "^2.7.4",
+    "promise": "^7.1.1",
     "underscore": "^1.8.2",
     "xlsjs": "^0.7.5",
     "xmlbuilder": "^2.6.2"

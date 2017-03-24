@@ -9,16 +9,16 @@
 // Thanks for reading this.
 
 var mysql = {
-  user : "hic",
-  password : "dracones",
-  database : "hic",
-  port : 3306,
-  connectionLimit: 25,
+    user: "hic",
+    password: "dracones",
+    database: "hic",
+    port: 3306,
+    connectionLimit: 25,
 // debug: true
 }
 
 var fs = {
-  tmp : "/tmp/"
+    tmp: "/tmp/"
 }
 
 
