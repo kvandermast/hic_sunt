@@ -24,6 +24,10 @@ hic.config(['$routeProvider',
                 controller: 'exportController'
             })
 
+            .when('/import/:type/project/:project_id', {
+                templateUrl: 'import-overview.html',
+                controller: 'importController'
+            })
             .otherwise({
                 redirectTo: '/projects'
             })

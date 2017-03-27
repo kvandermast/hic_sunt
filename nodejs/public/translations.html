@@ -1,75 +1,90 @@
 <div class="container-fluid">
-  <nav class="navbar navbar-default">
-    <div class="container-fluid">
-      <!-- Brand and toggle get grouped for better mobile display -->
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#/projects"><i class="fa fa-angle-double-left"></i> Projects</a>
-      </div>
-
-      <!-- Collect the nav links, forms, and other content for toggling -->
-      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <form class="navbar-form navbar-right" ng-submit="createKey()">
-          <div class="form-group">
-            <input type="text" class="form-control" ng-model="keyName" placeholder="New Key">
-          </div>
-          <button type="submit" class="btn btn-default">Save</button>
-        </form>
-      </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
-  </nav>
-</div>
-
-<div class="container-fluid">
-  <ol class="breadcrumb">
-    <li><a href="#/projects">Projects</a></li>
-    <li class="active">{{project.name}}</li>
-  </ol>
-</div>
-
-<div class="container-fluid">
-  <div class="row" style="padding-bottom: 15px">
-    <div class="col-md-8">
-        &nbsp;
-    </div>
-
-    <div class="col-md-4">
-      <div style="font-size: 0.8em" class="text-right">
-        Export: <a href="/export/android/project/{{project.id}}">Android</a> |
-                <a href="/export/ios/project/{{project.id}}">iOS</a> |
-                <a href="/export/xls/project/{{project.id}}">Excel</a> |
-                <a href="/export/po/project/{{project.id}}">PO files</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="table-responsive">
-    <table class="table table-condensed table-hover">
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th ng-repeat="language in languages">
-            <a href="#/translations/by-lang/{{project.id}}/{{language.id}}" role="button">{{language.iso_code}}</a>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="key in keys">
-          <td>
-            <a  href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
-          </td>
-          <td ng-repeat="language in languages" class="text-center">
-            <div ng-switch on="matrix[key.id][language.id]">
-              <div ng-switch-when="true">
-                <i class="fa fa-check" style="color: green;"></i>
-              </div>
-              <div ng-switch-default>
-                <i class="fa fa-question" style="color: orange;"></i>
-              </div>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#/projects"><i class="fa fa-angle-double-left"></i> Projects</a>
             </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <form class="navbar-form navbar-right" ng-submit="createKey()">
+                    <div class="form-group">
+                        <input type="text" class="form-control" ng-model="keyName" placeholder="New Key">
+                    </div>
+                    <button type="submit" class="btn btn-default">Save</button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+</div>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li><a href="#/projects">Projects</a></li>
+        <li class="active">{{project.name}}</li>
+    </ol>
+</div>
+
+<div class="container-fluid">
+    <div class="col-md-2 col-md-offset-10" style="padding-bottom: 15px;">
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="true">
+                Manage translations
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <li class="dropdown-header">Export</li>
+                <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
+                <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
+                <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Import</li>
+                <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>
+                <li><a href="/#/import/ios/project/{{project.id}}">from iOS</a></li>
+                <li><a href="/#/import/xls/project/{{project.id}}">from Excel</a></li>
+
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">General</div>
+        <!-- div class="panel-body">
+          <p>...</p>
+        </div-->
+
+        <table class="table table-condensed table-hover">
+            <thead>
+            <tr>
+                <th>Key</th>
+                <th ng-repeat="language in languages">
+                    <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
+                       role="button">{{language.iso_code}}</a>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="key in keys">
+                <td>
+                    <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
+                </td>
+                <td ng-repeat="language in languages" class="text-center">
+                    <div ng-switch on="matrix[key.id][language.id]">
+                        <div ng-switch-when="true">
+                            <i class="fa fa-check" style="color: green;"></i>
+                        </div>
+                        <div ng-switch-default>
+                            <i class="fa fa-question" style="color: orange;"></i>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

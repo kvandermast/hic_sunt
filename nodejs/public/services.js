@@ -29,3 +29,10 @@ hicServices.factory('Language', ['$resource',
         return $resource('/api/languages', {}, {});
     }
 ]);
+
+
+hicServices.factory('Import', ['$resource',
+    function ($resource) {
+        return $resource('/api/import', {}, {});
+    }
+]);

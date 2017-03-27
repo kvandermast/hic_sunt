@@ -15,6 +15,8 @@ DROP PROCEDURE IF EXISTS R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY $$
 
 DROP PROCEDURE IF EXISTS R_CREATE_PROJECT_TRANSLATION $$
 
+DROP PROCEDURE IF EXISTS R_IMPORT_TRANSLATION $$
+
 CREATE PROCEDURE R_FETCH_ALL_PROJECTS()
 BEGIN
 	SELECT 	*
@@ -93,6 +95,45 @@ BEGIN
 	INSERT INTO T_PROJECT_TRANSLATIONS(project_key_id, language_id, `value`)
 	VALUES(p_key_id, p_language_id, p_value)
     ON DUPLICATE KEY UPDATE `value` = p_value;
+END $$
+
+
+CREATE PROCEDURE R_IMPORT_TRANSLATION(IN p_project_id BIGINT, IN p_language_id BIGINT, IN p_name VARCHAR(255), IN p_value LONGTEXT)
+BEGIN
+	DECLARE v_project_id, v_language_id, v_project_key_id BIGINT;
+
+	SELECT	id INTO v_language_id
+    FROM	T_LANGUAGES
+    WHERE	id = p_language_id
+    LIMIT 	0,1;
+    
+    SELECT 	id INTO v_project_id
+    FROM 	T_PROJECTS
+    WHERE	id = p_project_id
+    LIMIT	0,1;
+    
+    IF v_language_id IS NOT NULL AND v_project_id IS NOT NULL 
+    THEN
+		SELECT 	id INTO v_project_key_id
+        FROM	T_PROJECT_KEYS
+        WHERE	project_id = v_project_id
+				AND upper(code) = upper(p_name)
+		LIMIT 	0,1;
+        
+        -- CREATE PROJECT KEY IF NOT FOUND
+        IF v_project_key_id IS NULL 
+        THEN
+			INSERT INTO T_PROJECT_KEYS(project_id, code)
+			VALUES(v_project_id, p_name)
+			ON DUPLICATE KEY UPDATE code=p_name;
+        
+			SET v_project_key_id = last_insert_id();
+        END IF;
+        
+        INSERT INTO T_PROJECT_TRANSLATIONS(project_key_id, language_id, value)
+        VALUES(v_project_key_id, v_language_id, p_value)
+        ON DUPLICATE KEY UPDATE `value` = p_value;
+    END IF;
 END $$
 
 DELIMITER ;

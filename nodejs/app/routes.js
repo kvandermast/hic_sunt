@@ -3,6 +3,7 @@ var xmlbuilder = require('xmlbuilder');
 var uuid = require('node-uuid');
 var fs = require('fs');
 var JSZip = require("jszip");
+var Bluebird = require('bluebird');
 
 const EXPORT_FOLDER = __dirname + '/../../fs/';
 
@@ -14,14 +15,23 @@ module.exports = function (app) {
     app.get('/api/projects', function ($request, $response) {
         if ($request.query.project_id) {
             var $_project_id = parseFloat($request.query.project_id)
-            mysql.one("CALL R_FETCH_PROJECT_BY_ID(?);", [$_project_id], function ($error, $result, $fields) {
-                $response.json($result);
-            });
+
+            mysql.queryRow("CALL R_FETCH_PROJECT_BY_ID(?);", [$_project_id])
+                .then(function ($result) {
+                    $response.json($result);
+                })
+                .catch(function ($error) {
+                    $response.json([])
+                });
         }
         else {
-            mysql.many("CALL R_FETCH_ALL_PROJECTS();", [], function ($error, $result, $fields) {
-                $response.json($result);
-            });
+            mysql.query("CALL R_FETCH_ALL_PROJECTS();", [])
+                .then(function ($result) {
+                    $response.json($result);
+                })
+                .catch(function (error) {
+                    $response.json([]);
+                });
         }
     });
 
@@ -31,22 +41,21 @@ module.exports = function (app) {
         var $_name = $request.body.name;
         var $_description = $request.body.description;
 
-        mysql.one("CALL R_CREATE_PROJECT(?,?);", [$_name, $_description], function ($error, $result, $fields) {
-            if ($error) {
-                console.log($error);
-            }
 
-            mysql.many("CALL R_FETCH_ALL_PROJECTS();", [], function ($error, $result, $fields) {
-                $response.json($result);
+        mysql.query("CALL R_CREATE_PROJECT(?,?);", [$_name, $_description])
+            .then(function () {
+                mysql.query("CALL R_FETCH_ALL_PROJECTS();", [])
+                    .then(function ($data) {
+                        $response.json($data);
+                    });
             });
-
-        });
     });
 
     app.get('/api/project/:project_id/keys', function ($request, $response) {
-        mysql.many("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [parseFloat($request.params.project_id)], function ($error, $result, $fields) {
-            $response.json($result);
-        });
+        mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [parseFloat($request.params.project_id)])
+            .then(function ($data) {
+                $response.json($data);
+            });
     });
 
     app.get('/api/project/:project_id/translations', function ($request, $response) {
@@ -55,65 +64,54 @@ module.exports = function (app) {
         var key_id = parseFloat($request.query.key_id);
 
         if ($request.query.language_id) {
-            mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(?, ?);", [project_id, language_id], function ($error, $result, $fields) {
-                $response.json($result);
-            });
+            mysql.query("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(?, ?);", [project_id, language_id])
+                .then(function ($result) {
+                    $response.json($result);
+                });
         }
         else if ($request.query.key_id) {
-            mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, key_id], function ($error, $result, $fields) {
-                $response.json($result);
-            });
+            mysql.query("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, key_id])
+                .then(function ($result) {
+                    $response.json($result);
+                });
         }
     });
 
+    /**
+     * Create the translation matrix for the controller. It maps the keys with the languages for the provided project.
+     * The values of the matrix will be true or false, depending on the fact if the translation is given.
+     */
     app.get('/api/project/:project_id/matrix', function ($request, $response) {
         var project_id = parseFloat($request.params.project_id);
 
         var matrix = {};
-
-        var $i = 0;
-
-
         console.log("Building matrix");
 
-        mysql.many("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id], function ($error, $result1, $fields) {
-            $result1.forEach(function (key) {
-                var data = {};
-                var $j = 0;
+        mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
+            .map(function ($key) {
+                matrix[$key.id] = [];
 
-                mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, key.id], function ($error, $result2, $fields) {
-                    $i++;
-
-                    $result2.forEach(function (el) {
-                        $j++;
-
-                        data[el.language_id] = (el.value && el.value != '');
-
-                        matrix[key.id] = data;
-
-                        if ($i >= $result1.length && $j >= $result2.length) {
-                            $response.json(matrix);
-                        }
+                return mysql.query("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, $key.id])
+                    .map(function ($translation) {
+                        matrix[$key.id][$translation.language_id] = (null !== $translation.value && $translation.value !== '');
                     });
-                });
+            })
+            .then(function () {
+                $response.json(matrix);
             });
-        });
     });
 
     app.post('/api/project/keys', function ($request, $response) {
         var $_name = $request.body.name;
         var $_project_id = parseFloat($request.body.project_id);
 
-        mysql.one("CALL R_CREATE_PROJECT_KEY(?,?);", [$_project_id, $_name], function ($error, $result, $fields) {
-            if ($error) {
-                console.log($error);
-            }
-
-            mysql.many("CALL R_FETCH_ALL_PROJECT_KEYS();", [$_project_id], function ($error, $result, $fields) {
-                $response.json($result);
+        mysql.queryRow("CALL R_CREATE_PROJECT_KEY(?,?);", [$_project_id, $_name])
+            .then(function ($result) {
+                mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS();", [$_project_id])
+                    .then(function ($result) {
+                        $response.json($result);
+                    });
             });
-
-        });
     });
 
     app.post('/api/project/translations', function ($request, $response) {
@@ -122,13 +120,10 @@ module.exports = function (app) {
         var $_language_id = parseFloat($request.body.language_id);
         var $_key_id = parseFloat($request.body.key_id);
 
-        mysql.one("CALL R_CREATE_PROJECT_TRANSLATION(?,?,?,?);", [$_project_id, $_key_id, $_language_id, $_value], function ($error, $result, $fields) {
-            if ($error) {
-                console.log($error);
-            }
-
-            $response.json({"status": "OK"});
-        });
+        mysql.queryRow("CALL R_CREATE_PROJECT_TRANSLATION(?,?,?,?);", [$_project_id, $_key_id, $_language_id, $_value])
+            .then(function ($result) {
+                $response.json({"status": "OK"});
+            });
     });
 
     // ###########################################################################
@@ -185,96 +180,6 @@ module.exports = function (app) {
                 });
             });
         });
-    });
-
-    app.get('/export/po/project/:project_id', function ($request, $response) {
-        var $project_id = parseFloat($request.params.project_id);
-
-        var JSZip = require("jszip");
-        var zip = new JSZip();
-        var request_uuid = uuid.v4();
-
-        mysql.one("CALL R_FETCH_PROJECT_BY_ID(?);", [$project_id], function ($error, $project, $fields) {
-            mysql.many("CALL R_FETCH_ALL_LANGUAGES();", [], function ($error, $languages, $fields) {
-                $j = 0;
-
-                $languages.forEach(function ($language) {
-                    mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(?, ?);", [$project_id, $language.id], function ($error, $result, $fields) {
-
-                        var $i = 0;
-
-                        var content = "";
-                        content += "# " + $project.name.toUpperCase() + ".\n";
-                        content += "# " + $project.description + ".\n";
-                        content += "# Copyright (C) YEAR This_file_is_part_of_KDE\n";
-                        content += "# This file is distributed under the same license as the PACKAGE package.\n";
-                        content += "# Exported by Hic Sunt\n";
-                        content += "#\n";
-                        content += "msgid \"\"";
-                        content += "msgstr \"\"";
-                        content += "\"Project-Id-Version: \n\"";
-                        content += "\"POT-Creation-Date: \n\"";
-                        content += "\"PO-Revision-Date: \n\"";
-                        content += "\"Last-Translator: \n\"";
-                        content += "\"Language-Team: \n\"";
-                        content += "\"MIME-Version: 1.0\n\"";
-                        content += "\"Content-Type: text/plain; charset=iso-8859-1\n\"";
-                        content += "\"Content-Transfer-Encoding: 8bit\n\"";
-                        content += "\"Language: bg\n\"";
-                        content += "\"X-Generator: Hic Sunt \n\"";
-
-                        $result.forEach(function ($item) {
-                            var $value = $item.value ? $item.value : "";
-                            $value = $value.replace(/"/g, "\\\"");
-                            $value = $value.replace(/'/g, "\\\'");
-
-                            /*
-                             #| msgid "Solar System"
-                             msgctxt "Toggle Constellation Lines in the display"
-                             msgid "Const. Lines"
-                             msgstr "Linija sazvežđa"
-
-                             */
-                            content += "#| msgid \"" + $item.code + "\"\n";
-                            content += "#| msgstr \"" + $value + "\"\n";
-                            content += "msgctxt \"" + $value + "\"\n";
-                            content += "msgid \"" + $item.code + "\"\n";
-                            content += "msgstr \"" + $value + "\"\n";
-                            content += "\n";
-
-                            $i++;
-
-                            if ($i >= $result.length) {
-                                //zip.folder($language.iso_code.toLowerCase() + ".po").file('Localizable.strings', content);
-                                zip.file($language.iso_code.toLowerCase() + '.po', content);
-
-                                $j++;
-
-                                if ($j >= $languages.length) {
-                                    var buffer = zip.generate({type: "nodebuffer"});
-
-                                    fs.writeFile(EXPORT_FOLDER + request_uuid + ".zip", buffer, function (err) {
-                                        if (err) throw err;
-
-                                        fs.readFile(EXPORT_FOLDER + request_uuid + ".zip", 'binary', function (a_error, data) {
-                                            $response.setHeader('Content-Type', 'application/zip');
-                                            $response.setHeader('Content-Disposition', 'attachment; filename=' + request_uuid + '.zip');
-
-                                            $response.write(data, 'binary');
-
-                                            $response.end();
-                                        });
-                                    });
-                                }
-                            }
-                        });
-                    });
-                });
-            });
-        });
-
-
-
     });
 
     app.get('/export/ios/project/:project_id', function ($request, $response) {
@@ -393,6 +298,39 @@ module.exports = function (app) {
         });
     });
 
+
+    // ###########################################################################
+    // IMPORT DATA
+    // ###########################################################################
+
+    app.post('/api/import/', function ($request, $response) {
+        var $_project_id = parseFloat($request.body.project_id);
+        var $_language_id = parseFloat($request.body.language_id);
+
+        var type = $request.body.type;
+
+        if (type.toUpperCase() === 'ANDROID') {
+            var $_xml = $request.body.xml;
+
+            var parseString = require('xml2js').parseString;
+            parseString($_xml, function (err, result) {
+                if (!err) {
+                    result.resources.string.forEach(function (e) {
+                        var $key = e.$.name;
+                        var $val = e._;
+
+                        mysql.insert("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $key, $val], function($error, $result, $fields) {
+                            //ignore.
+                        });
+                    });
+                } else {
+                    console.error(err);
+                }
+            });
+
+            $response.json({'status' : 'PROCESSING'});
+        }
+    });
 
     // ###########################################################################
     // APPLICATION

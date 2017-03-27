@@ -148,3 +148,83 @@ hicControllers.controller('exportController', ['$scope', '$routeParams', '$http'
         });
     }
 ]);
+
+hicControllers.controller('importController', ['$scope', 'Language', 'Project', 'Import', '$routeParams', '$http',
+    function ($scope, Language, Project, Import, $routeParams, $http) {
+        var project_id = $routeParams.project_id;
+        var type = $routeParams.type;
+
+        $scope.project = Project.get({"project_id": project_id});
+        $scope.import_type = type;
+        $scope.languages = Language.query();
+
+        $scope.upload = function () {
+            var files = document.getElementsByName('file');
+
+            for ($i = 0; $i < files.length; $i++) {
+                var $file = files[$i];
+
+                if($file.files.length === 1) {
+                    var $languageId = $file.dataset.language;
+                    var $projectId = $file.dataset.project;
+
+                    var r = new FileReader();
+
+                    r.onloadend = function(e) {
+                        var result = e.target.result;
+
+                        var data = new Import();
+                        data.project_id = $projectId;
+                        data.language_id = $languageId;
+                        data.type = $scope.import_type;
+
+                        if($scope.import_type.toUpperCase() === 'ANDROID') {
+                            data.type = 'ANDROID';
+                            data.xml = result;
+                            data.$save();
+                        }
+                    };
+
+                    r.readAsBinaryString($file.files[0]);
+                }
+            }
+        };
+    }
+]);
+
+hicControllers.directive('ngFileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            var model = $parse(attrs.ngFileModel);
+            var isMultiple = attrs.multiple;
+            var modelSetter = model.assign;
+            element.bind('change', function () {
+                var values = [];
+                angular.forEach(element[0].uploadfiles, function (item) {
+                    var value = {
+                        // File Name
+                        name: item.name,
+                        //File Size
+                        size: item.size,
+                        //File URL to view
+                        url: URL.createObjectURL(item),
+                        // File Input Value
+                        _file: item
+                    };
+
+                    console.log(valu);
+
+                    values.push(value);
+                });
+                scope.$apply(function () {
+                    if (isMultiple) {
+                        modelSetter(scope, values);
+                    } else {
+                        modelSetter(scope, values[0]);
+                    }
+                });
+            });
+        }
+    };
+}]);
