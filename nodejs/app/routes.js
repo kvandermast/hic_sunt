@@ -335,8 +335,8 @@ module.exports = function (app) {
     // ###########################################################################
     // PROJECT SECTIONS
     // ###########################################################################
-    app.get('/api/project/:project_id/sections', function ($request, $response) {
-        var $_project_id = parseFloat($request.params.project_id);
+    app.get('/api/project/sections', function ($request, $response) {
+        var $_project_id = parseFloat($request.query.project_id);
 
         mysql.query("CALL R_FETCH_ALL_PROJECT_SECTIONS(?);", [$_project_id])
             .then(function ($result) {
@@ -363,6 +363,20 @@ module.exports = function (app) {
             .then(function ($result) {
                 $response.json($result);
             });
+    });
+
+    app.delete('/api/project/sections', function($request, $response) {
+        var $_project_id = parseFloat($request.query.project_id);
+        var $_id = parseFloat($request.query.id);
+
+        mysql.queryRow("CALL R_DELETE_PROJECT_SECTION(?,?);", [$_id, $_project_id])
+            .then(function ($result) {
+                $response.json($result);
+            })
+            .catch(function($error) {
+                $response.json($error);
+            });
+
     });
 
     // ###########################################################################

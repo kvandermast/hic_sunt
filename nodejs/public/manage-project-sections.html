@@ -32,19 +32,23 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Name</th>
+                    <th>&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="section in sections">
-                    <td>{{section.id}}</td>
                     <td><input type="text"
                                value="{{section.name}}"
                                ng-model="section.name"
                                ng-change="updateSection(section)"
                                placeholder="Name of section"
                                name="name"/></td>
+                    <td>
+                        <span class="glyphicon glyphicon-trash"
+                              aria-hidden="true"
+                              ng-click="deleteSection(section)"></span>
+                    </td>
                 </tr>
                 </tbody>
             </table>

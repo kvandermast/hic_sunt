@@ -39,7 +39,7 @@ hicServices.factory('Import', ['$resource',
 
 hicServices.factory('ProjectSection', ['$resource',
     function ($resource) {
-        return $resource('/api/project/:project_id/sections', { }, {
+        return $resource('/api/project/sections', { id: '@id', project_id: '@project_id'}, {
             update: {method: 'PUT'},
             query: {method: 'GET', isArray: true},
             get: {method: 'GET'},
