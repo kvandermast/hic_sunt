@@ -28,6 +28,10 @@ hic.config(['$routeProvider',
                 templateUrl: 'import-overview.html',
                 controller: 'importController'
             })
+            .when('/manage/project/:project_id', {
+                templateUrl: 'manage-project.html',
+                controller: 'manageProjectController'
+            })
             .when('/manage/sections/project/:project_id', {
                 templateUrl: 'manage-project-sections.html',
                 controller: 'manageProjectSectionsController'

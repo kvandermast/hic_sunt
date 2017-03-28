@@ -1,0 +1,46 @@
+<div class="container-fluid">
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#/translations/{{project.id}}"><i class="fa fa-angle-double-left"></i>
+                    {{project.name}}</a>
+            </div>
+        </div><!-- /.container-fluid -->
+    </nav>
+</div>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li><a href="#/projects">Projects</a></li>
+        <li><a href="#/translations/{{project.id}}">{{project.name}}</a></li>
+        <li class="active">Manage project</li>
+    </ol>
+</div>
+
+<div class="container">
+    <div class="row">
+        <form ng-submit="updateProject(project)">
+            <div class="form-group">
+                <label for="projectName">Project:</label>
+                <input type="text"
+                       id="projectName"
+                       class="form-control"
+                       ng-model="project.name"
+                       placeholder="New section">
+            </div>
+            <div class="form-group">
+                <label for="projectDescription">Description (optional):</label>
+                <textarea class="form-control" ng-model="project.description"
+                          placeholder="Optionally provide some usefully description"
+                          name="description"
+                          id="projectDescription"></textarea>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary " value="Save"/>
+                <a class="btn btn-default" href="#/translations/{{project.id}}" role="button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

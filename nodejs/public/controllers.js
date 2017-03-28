@@ -192,16 +192,38 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
     }
 ]);
 
+hicControllers.controller('manageProjectController', ['$scope', 'Project', '$routeParams', '$http',
+    function ($scope, Project, $routeParams, $http) {
+        var project_id = $routeParams.project_id;
+
+        $scope.project = Project.get({"project_id": project_id});
+
+        $scope.updateProject = function ($project) {
+            $project.id = project_id;
+
+            $project.$update(function () {
+                $scope.project = Project.get({"project_id": project_id});
+            });
+        };
+
+        $scope.deleteProject = function ($project) {
+            $project.id = $routeParams.project_id;
+
+            if (confirm("Are you sure you want to remove the project '" + $project.name + "'?")) {
+                $section.$delete(function () {
+                    $http.redirect('/#/projects');
+                });
+            }
+        };
+    }
+]);
+
 hicControllers.controller('manageProjectSectionsController', ['$scope', 'Project', 'ProjectSection', '$routeParams', '$http',
     function ($scope, Project, ProjectSection, $routeParams, $http) {
         var project_id = $routeParams.project_id;
 
         $scope.project = Project.get({"project_id": project_id});
         $scope.sections = ProjectSection.query({"project_id": project_id});
-
-        //$scope.languages = Language.query();
-        //$scope.keys = ProjectKey.query({"project_id": project_id});
-        //$scope.matrix = ProjectTranslationsMatrix.get({"project_id": project_id});
 
 
         $scope.createSection = function () {

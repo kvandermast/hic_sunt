@@ -38,11 +38,14 @@
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                     <li class="dropdown-header">Settings</li>
                     <li><a href="/#/manage/sections/project/{{project.id}}">Manage sections</a></li>
+                    <li><a href="/#/manage/project/{{project.id}}">Project settings</a></li>
                     <li role="separator" class="divider"></li>
+
                     <li class="dropdown-header">Export translations</li>
                     <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
                     <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
                     <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
+
                     <li role="separator" class="divider"></li>
                     <li class="dropdown-header">Import translations</li>
                     <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>

@@ -2,7 +2,12 @@ var hicServices = angular.module('hicServices', ['ngResource']);
 
 hicServices.factory('Project', ['$resource',
     function ($resource) {
-        return $resource('/api/projects', {}, {});
+        return $resource('/api/projects', { id: '@id'}, {
+            update: {method: 'PUT'},
+            query: {method: 'GET', isArray: true},
+            get: {method: 'GET'},
+            delete: {method: 'DELETE'}
+        });
     }
 ]);
 

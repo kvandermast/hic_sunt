@@ -36,8 +36,6 @@ module.exports = function (app) {
     });
 
     app.post('/api/projects', function ($request, $response) {
-        console.log($request.body);
-
         var $_name = $request.body.name;
         var $_description = $request.body.description;
 
@@ -48,6 +46,22 @@ module.exports = function (app) {
                     .then(function ($data) {
                         $response.json($data);
                     });
+            });
+    });
+
+    app.put('/api/projects', function ($request, $response) {
+        console.log($request.body);
+
+        var $_id = $request.body.id;
+        var $_name = $request.body.name;
+        var $_description = $request.body.description;
+
+        mysql.query("CALL R_UPDATE_PROJECT(?,?,?);", [$_id, $_name, $_description])
+            .then(function () {
+                $response.json($data);
+            })
+            .catch(function($error) {
+                $response.json($error);
             });
     });
 
@@ -365,7 +379,7 @@ module.exports = function (app) {
             });
     });
 
-    app.delete('/api/project/sections', function($request, $response) {
+    app.delete('/api/project/sections', function ($request, $response) {
         var $_project_id = parseFloat($request.query.project_id);
         var $_id = parseFloat($request.query.id);
 
@@ -373,7 +387,7 @@ module.exports = function (app) {
             .then(function ($result) {
                 $response.json($result);
             })
-            .catch(function($error) {
+            .catch(function ($error) {
                 $response.json($error);
             });
 
