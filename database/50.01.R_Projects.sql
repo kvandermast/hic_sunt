@@ -17,6 +17,10 @@ DROP PROCEDURE IF EXISTS R_CREATE_PROJECT_TRANSLATION $$
 
 DROP PROCEDURE IF EXISTS R_IMPORT_TRANSLATION $$
 
+DROP PROCEDURE IF EXISTS R_FETCH_ALL_PROJECT_SECTIONS $$
+DROP PROCEDURE IF EXISTS R_CREATE_PROJECT_SECTION $$
+DROP PROCEDURE IF EXISTS R_UPDATE_PROJECT_SECTION $$
+
 CREATE PROCEDURE R_FETCH_ALL_PROJECTS()
 BEGIN
 	SELECT 	*
@@ -134,6 +138,41 @@ BEGIN
         VALUES(v_project_key_id, v_language_id, p_value)
         ON DUPLICATE KEY UPDATE `value` = p_value;
     END IF;
+END $$
+
+CREATE PROCEDURE R_FETCH_ALL_PROJECT_SECTIONS(IN p_project_id BIGINT)
+BEGIN
+		SELECT 	ps.id, ps.name
+        FROM	T_PROJECT_SECTIONS ps, T_PROJECTS p
+        WHERE	p.id = p_project_id AND ps.project_id = p.id
+        ORDER BY p.name;
+END $$
+
+CREATE PROCEDURE R_CREATE_PROJECT_SECTION(IN p_project_id BIGINT, IN p_name VARCHAR(255))
+BEGIN
+	DECLARE v_project_id BIGINT;
+    
+    SELECT 	id INTO v_project_id
+    FROM	T_PROJECTS
+    WHERE	id = p_project_id;
+    
+    IF v_project_id IS NOT NULL 
+    THEN
+		INSERT INTO T_PROJECT_SECTIONS(project_id, name)
+        VALUES(p_project_id, p_name);
+        
+        SELECT * FROM T_PROJECT_SECTIONS WHERE id = last_insert_id();
+    END IF;
+END $$
+
+CREATE PROCEDURE R_UPDATE_PROJECT_SECTION(IN p_id BIGINT, IN p_project_id BIGINT, IN p_name VARCHAR(255))
+BEGIN
+	UPDATE 	T_PROJECT_SECTIONS
+	SET		name = p_name
+    WHERE	id = p_id AND project_id = p_project_id
+    LIMIT	1;
+    
+    SELECT "OK";
 END $$
 
 DELIMITER ;

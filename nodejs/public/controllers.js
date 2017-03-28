@@ -192,6 +192,46 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
     }
 ]);
 
+hicControllers.controller('manageProjectSectionsController', ['$scope', 'Project', 'ProjectSection', '$routeParams', '$http',
+    function ($scope, Project, ProjectSection, $routeParams, $http) {
+        var project_id = $routeParams.project_id;
+
+        $scope.project = Project.get({"project_id": project_id});
+        $scope.sections = ProjectSection.query({"project_id": project_id});
+
+        //$scope.languages = Language.query();
+        //$scope.keys = ProjectKey.query({"project_id": project_id});
+        //$scope.matrix = ProjectTranslationsMatrix.get({"project_id": project_id});
+
+
+        $scope.createSection = function () {
+            var name = $scope.name;
+
+            var data = new ProjectSection();
+            data.project_id = project_id;
+            data.name = name;
+
+            data.$save();
+
+            $scope.sections = ProjectSection.query({"project_id": project_id});
+            $scope.name = '';
+        };
+
+        $scope.updateSection = function($section) {
+
+            //data.id = $sectionId;
+            $section.project_id = $routeParams.project_id;
+            //data.name = $value;
+
+            $section.$update(function() {
+
+            });
+
+            //$scope.sections = ProjectSection.query({"project_id": project_id});
+        }
+    }
+]);
+
 hicControllers.directive('ngFileModel', ['$parse', function ($parse) {
     return {
         restrict: 'A',
@@ -212,8 +252,6 @@ hicControllers.directive('ngFileModel', ['$parse', function ($parse) {
                         // File Input Value
                         _file: item
                     };
-
-                    console.log(valu);
 
                     values.push(value);
                 });

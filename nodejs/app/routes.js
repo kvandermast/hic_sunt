@@ -14,7 +14,7 @@ module.exports = function (app) {
     // ###########################################################################
     app.get('/api/projects', function ($request, $response) {
         if ($request.query.project_id) {
-            var $_project_id = parseFloat($request.query.project_id)
+            var $_project_id = parseFloat($request.query.project_id);
 
             mysql.queryRow("CALL R_FETCH_PROJECT_BY_ID(?);", [$_project_id])
                 .then(function ($result) {
@@ -319,7 +319,7 @@ module.exports = function (app) {
                         var $key = e.$.name;
                         var $val = e._;
 
-                        mysql.insert("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $key, $val], function($error, $result, $fields) {
+                        mysql.insert("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $key, $val], function ($error, $result, $fields) {
                             //ignore.
                         });
                     });
@@ -328,8 +328,41 @@ module.exports = function (app) {
                 }
             });
 
-            $response.json({'status' : 'PROCESSING'});
+            $response.json({'status': 'PROCESSING'});
         }
+    });
+
+    // ###########################################################################
+    // PROJECT SECTIONS
+    // ###########################################################################
+    app.get('/api/project/:project_id/sections', function ($request, $response) {
+        var $_project_id = parseFloat($request.params.project_id);
+
+        mysql.query("CALL R_FETCH_ALL_PROJECT_SECTIONS(?);", [$_project_id])
+            .then(function ($result) {
+                $response.json($result);
+            });
+    });
+
+    app.post('/api/project/sections', function ($request, $response) {
+        var $_project_id = parseFloat($request.body.project_id);
+        var $_name = $request.body.name;
+
+        mysql.query("CALL R_CREATE_PROJECT_SECTION(?,?);", [$_project_id, $_name])
+            .then(function ($result) {
+                $response.json($result);
+            });
+    });
+
+    app.put('/api/project/sections', function ($request, $response) {
+        var $_project_id = parseFloat($request.body.project_id);
+        var $_id = parseFloat($request.body.id);
+        var $_name = $request.body.name;
+
+        mysql.query("CALL R_UPDATE_PROJECT_SECTION(?,?,?);", [$_id, $_project_id, $_name])
+            .then(function ($result) {
+                $response.json($result);
+            });
     });
 
     // ###########################################################################

@@ -40,7 +40,8 @@
           <tr ng-repeat="translation in translations">
               <td><a href="#/translations/by-key/{{project.id}}/{{translation.project_key_id}}" role="button">{{translation.code}}</a></td>
               <td style="width:80%">
-                <textarea class="form-control" ng-model="translation.value"
+                <textarea class="form-control"
+                          ng-model="translation.value"
                           placeholder="No translation provided for '{{translation.code}}'"
                           name="description" id="projectDescription">{{translation.value}}</textarea>
               </td>

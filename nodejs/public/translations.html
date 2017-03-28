@@ -27,25 +27,30 @@
 </div>
 
 <div class="container-fluid">
-    <div class="col-md-2 col-md-offset-10" style="padding-bottom: 15px;">
-        <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="true">
-                Manage translations
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                <li class="dropdown-header">Export</li>
-                <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
-                <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
-                <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
-                <li role="separator" class="divider"></li>
-                <li class="dropdown-header">Import</li>
-                <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>
-                <li><a href="/#/import/ios/project/{{project.id}}">from iOS</a></li>
-                <li><a href="/#/import/xls/project/{{project.id}}">from Excel</a></li>
+    <div class="row">
+        <div class="col-md-1" style="padding-bottom: 15px;">
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="true">
+                    Manage {{project.name}}
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <li class="dropdown-header">Settings</li>
+                    <li><a href="/#/manage/sections/project/{{project.id}}">Manage sections</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li class="dropdown-header">Export translations</li>
+                    <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
+                    <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
+                    <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li class="dropdown-header">Import translations</li>
+                    <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>
+                    <li><a href="/#/import/ios/project/{{project.id}}">from iOS</a></li>
+                    <li><a href="/#/import/xls/project/{{project.id}}">from Excel</a></li>
 
-            </ul>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
