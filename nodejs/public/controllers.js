@@ -228,9 +228,11 @@ hicControllers.controller('manageProjectSectionsController', ['$scope', 'Project
         $scope.deleteSection = function ($section) {
             $section.project_id = $routeParams.project_id;
 
-            $section.$delete(function () {
-                $scope.sections = ProjectSection.query({"project_id": project_id});
-            });
+            if (confirm("Are you sure you want to remove the section '" + $section.name + "'?")) {
+                $section.$delete(function () {
+                    $scope.sections = ProjectSection.query({"project_id": project_id});
+                });
+            }
         };
     }
 ]);
