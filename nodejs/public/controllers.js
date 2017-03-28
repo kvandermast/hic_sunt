@@ -192,8 +192,8 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
     }
 ]);
 
-hicControllers.controller('manageProjectController', ['$scope', 'Project', '$routeParams', '$http',
-    function ($scope, Project, $routeParams, $http) {
+hicControllers.controller('manageProjectController', ['$scope', '$location', 'Project', '$routeParams', '$http',
+    function ($scope, $location, Project, $routeParams, $http) {
         var project_id = $routeParams.project_id;
 
         $scope.project = Project.get({"project_id": project_id});
@@ -210,8 +210,8 @@ hicControllers.controller('manageProjectController', ['$scope', 'Project', '$rou
             $project.id = $routeParams.project_id;
 
             if (confirm("Are you sure you want to remove the project '" + $project.name + "'?")) {
-                $section.$delete(function () {
-                    $http.redirect('/#/projects');
+                $project.$delete(function () {
+                    $location.path('/projects');
                 });
             }
         };

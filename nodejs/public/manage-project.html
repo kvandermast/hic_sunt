@@ -37,9 +37,18 @@
                           id="projectDescription"></textarea>
             </div>
 
-            <div class="form-group">
-                <input type="submit" class="btn btn-primary " value="Save"/>
-                <a class="btn btn-default" href="#/translations/{{project.id}}" role="button">Cancel</a>
+            <div class="row">
+                <div class="col-xs-2">
+                    <input type="submit" class="btn btn-primary " value="Save"/>
+                    <a class="btn btn-default" href="#/translations/{{project.id}}" role="button">Cancel</a>
+                </div>
+                <div class="col-xs-8">
+
+                </div>
+                <div class="col-xs-2">
+                    <a class="btn btn-danger" ng-click="deleteProject(project)" role="button" href="/#/projects">Remove project</a>
+
+                </div>
             </div>
         </form>
     </div>

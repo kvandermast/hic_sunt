@@ -50,17 +50,27 @@ module.exports = function (app) {
     });
 
     app.put('/api/projects', function ($request, $response) {
-        console.log($request.body);
-
         var $_id = $request.body.id;
         var $_name = $request.body.name;
         var $_description = $request.body.description;
 
         mysql.query("CALL R_UPDATE_PROJECT(?,?,?);", [$_id, $_name, $_description])
-            .then(function () {
+            .then(function ($data) {
                 $response.json($data);
             })
-            .catch(function($error) {
+            .catch(function ($error) {
+                $response.json($error);
+            });
+    });
+
+    app.delete('/api/projects', function ($request, $response) {
+        var $_id = $request.query.id;
+
+        mysql.query("CALL R_DELETE_PROJECT(?);", [$_id])
+            .then(function ($data) {
+                $response.json($data);
+            })
+            .catch(function ($error) {
                 $response.json($error);
             });
     });
