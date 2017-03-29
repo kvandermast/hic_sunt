@@ -90,13 +90,29 @@ hicControllers.controller('translationByLangController', ['$scope', 'Project', '
     }
 ]);
 
-hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'ProjectKey', 'ProjectTranslations', '$routeParams', '$http',
-    function ($scope, Project, ProjectKey, ProjectTranslations, $routeParams, $http) {
+hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'ProjectKey', 'ProjectTranslations', 'ProjectSection', '$routeParams', '$http',
+    function ($scope, Project, ProjectKey, ProjectTranslations, ProjectSection, $routeParams, $http) {
         var project_id = $routeParams.project_id;
         var key_id = $routeParams.key_id;
 
+        $scope.projectKey = ProjectKey.get({"id": key_id, "project_id": project_id});
         $scope.project = Project.get({"project_id": project_id});
+        $scope.sections = ProjectSection.query({"project_id": project_id});
         $scope.translations = ProjectTranslations.query({"project_id": project_id, "key_id": key_id});
+
+        $scope.updateProjectKey = function ($key) {
+            $key.$update(function(){
+                $scope.projectKey = ProjectKey.get({"id": key_id, "project_id": project_id});
+            });
+        };
+
+        $scope.deleteProjectKey = function($key) {
+            if(confirm("Are you sure you want to delete '" + $key.code + "'?")){
+                $key.$delete(function() {
+                   //ignore
+                });
+            }
+        }
 
         $scope.updateProjectTranslations = function () {
             var translations = $scope.translations;

@@ -75,11 +75,21 @@ module.exports = function (app) {
             });
     });
 
-    app.get('/api/project/:project_id/keys', function ($request, $response) {
-        mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [parseFloat($request.params.project_id)])
-            .then(function ($data) {
-                $response.json($data);
-            });
+    app.get('/api/project/keys', function ($request, $response) {
+        var project_id = parseFloat($request.query.project_id);
+        var key_id = parseFloat($request.query.id);
+
+        if (key_id) {
+            mysql.queryRow("CALL R_FETCH_PROJECT_KEY_BY_ID(?);", [key_id])
+                .then(function ($data) {
+                    $response.json($data);
+                })
+        } else {
+            mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
+                .then(function ($data) {
+                    $response.json($data);
+                });
+        }
     });
 
     app.get('/api/project/:project_id/translations', function ($request, $response) {
@@ -127,7 +137,7 @@ module.exports = function (app) {
 
     app.post('/api/project/keys', function ($request, $response) {
         var $_name = $request.body.name;
-        var $_project_id = parseFloat($request.body.project_id);
+        var $_project_id = parseFloat($request.query.project_id);
 
         mysql.queryRow("CALL R_CREATE_PROJECT_KEY(?,?);", [$_project_id, $_name])
             .then(function ($result) {
@@ -135,6 +145,18 @@ module.exports = function (app) {
                     .then(function ($result) {
                         $response.json($result);
                     });
+            });
+    });
+
+    app.put('/api/project/keys', function ($request, $response) {
+        var $_id = parseFloat($request.query.id);
+        var $_project_id = parseFloat($request.query.project_id);
+        var $_name = $request.body.code;
+        var $_section_id = parseFloat($request.body.project_section_id);
+
+        mysql.queryRow("CALL R_UPDATE_PROJECT_KEY(?,?,?,?);", [$_id, $_project_id, $_section_id, $_name])
+            .then(function ($result) {
+                $response.json($result);
             });
     });
 

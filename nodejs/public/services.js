@@ -13,7 +13,12 @@ hicServices.factory('Project', ['$resource',
 
 hicServices.factory('ProjectKey', ['$resource',
     function ($resource) {
-        return $resource('/api/project/:project_id/keys', {}, {});
+        return $resource('/api/project/keys', { id: '@id', project_id: '@project_id'}, {
+            update: {method: 'PUT'},
+            query: {method: 'GET', isArray: true},
+            get: {method: 'GET'},
+            delete: {method: 'DELETE'}
+        });
     }
 ]);
 
