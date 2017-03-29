@@ -90,7 +90,7 @@ var query = function($sql, $params) {
             } else {
                 connection.query($sql, $params, function ($error, $rows, $fields) {
                     if($error) {
-                        console.log($error);
+                        console.log("[ERROR SQL]", $sql, $params, $error);
 
                         reject($error);
                     } else {

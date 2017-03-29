@@ -19,6 +19,7 @@
     "body-parser": "^1.12.2",
     "bootstrap": "^3.3.4",
     "connect": "^3.3.5",
+    "exceljs": "^0.4.2",
     "express": "^4.11.2",
     "jszip": "^2.5.0",
     "method-override": "^2.3.2",

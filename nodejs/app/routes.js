@@ -86,7 +86,7 @@ module.exports = function (app) {
                     $response.json($data);
                 })
         } else {
-            if(section_id && section_id > 0) {
+            if (section_id && section_id > 0) {
                 mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, section_id])
                     .then(function ($data) {
                         $response.json($data);
@@ -133,9 +133,9 @@ module.exports = function (app) {
         var sql = "CALL R_FETCH_ALL_PROJECT_KEYS(?);";
         var sql_args = [project_id];
 
-        if(section_id) {
+        if (section_id) {
             sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?); ";
-            sql_args = [project_id,section_id];
+            sql_args = [project_id, section_id];
         }
 
         mysql.query(sql, sql_args)
@@ -301,54 +301,114 @@ module.exports = function (app) {
     });
 
     app.get('/export/xls/project/:project_id', function ($request, $response) {
-        var project_id = parseFloat($request.params.project_id);
+        var Excel = require('exceljs');
 
-        var xlsx = require('node-xlsx');
+        var $_project_id = parseFloat($request.params.project_id);
         var request_uuid = uuid.v4();
-        var $xls_data = [];
+        const workbook = new Excel.Workbook();
 
-        var $xls_sheet = {name: "Translations", data: []}
+        workbook.creator = 'Hic sunt ';
+        workbook.created = new Date();  // new Date(1985, 8, 30);
+        workbook.modified = new Date();
 
+        mysql.query("CALL R_FETCH_ALL_LANGUAGES();", [])
+            .each(function ($language) {
+                return mysql.query("CALL R_FETCH_ALL_PROJECT_SECTIONS(?);", [$_project_id])
+                    .each(function ($section) {
+                        var worksheet = workbook.addWorksheet($language.iso_code + $section.name);
 
-        mysql.many("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id], function ($error, $projectKeys, $fields) {
-            $xls_headers = ["Key"];
+                        worksheet.columns = [
+                            {
+                                header: 'Code',
+                                key: 'code',
+                                width: 30,
+                                style: {font: {name: 'Arial Black', color: {argb: 'FF00FF00'}, bold: true}}
+                            },
+                            {header: 'Original', key: 'original', width: 40},
+                            {header: 'Translation', key: 'translation', width: 40, outlineLevel: 1}
+                        ];
 
-            mysql.many("CALL R_FETCH_ALL_LANGUAGES();", [], function ($error, $languages, $fields) {
-                $languages.forEach(function ($language) {
-                    $xls_headers.push($language.iso_code)
-
-                    if ($xls_headers.length > $languages.length) {
-                        $xls_sheet['data'].push($xls_headers);
-
-                        $projectKeys.forEach(function ($key) {
-                            mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, $key.id], function ($error, $translations, $fields) {
-                                var $xls_row = [$key.code];
-
-                                $translations.forEach(function ($translation) {
-                                    $xls_row.push($translation.value);
-
-                                    if ($xls_row.length > $languages.length) {
-                                        $xls_sheet['data'].push($xls_row);
-
-                                        if ($xls_sheet['data'].length > $projectKeys.length) {
-                                            $xls_data.push($xls_sheet);
-
-                                            $response.setHeader('Content-Type', 'application/vnd.ms-excel');
-                                            $response.setHeader('Content-Disposition', 'attachment; filename=' + request_uuid + '.xlsx');
-
-                                            $response.write(xlsx.build($xls_data), 'binary');
-
-                                            $response.end();
-                                        }
-                                    }
+                        return mysql.query("CALL R_FETCH_PROJECT_TRANSLATIONS_FOR_EXPORT(?,?,?); ", [$_project_id, $language.id, $section.id])
+                            .each(function ($data) {
+                                worksheet.addRow({
+                                    code: $data.code,
+                                    original: $data.original,
+                                    translation: $data.value
                                 });
                             });
-                        });
-                    }
-                });
+                    });
+            })
+            .then(function () {
+                console.log("Setting return content types");
+                $response.setHeader('Content-Type', 'application/vnd.ms-excel');
+                $response.setHeader('Content-Disposition', 'attachment; filename=' + request_uuid + '.xlsx');
+
+                console.log("Writing the workbook");
+                // $response.write(workbook.xlsx, 'binary');
+                workbook.xlsx.writeFile(EXPORT_FOLDER + "TEST.xlsx")
+                    .then(function () {
+                        /*
+                         workbook.xlsx.write($response)
+                         .then(function () {
+                         $response.end();
+                         });
+                         */
+
+                        console.log("done writing the excel");
+                    });
             });
-        });
+        ;
     });
+
+    /*app.get('/export/xls/project/:project_id', function ($request, $response) {
+     var project_id = parseFloat($request.params.project_id);
+
+     var xlsx = require('node-xlsx');
+     var request_uuid = uuid.v4();
+     var $xls_data = [];
+
+     var $xls_sheet = {name: "Translations", data: []}
+
+
+     mysql.many("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id], function ($error, $projectKeys, $fields) {
+     $xls_headers = ["Key"];
+
+     mysql.many("CALL R_FETCH_ALL_LANGUAGES();", [], function ($error, $languages, $fields) {
+     $languages.forEach(function ($language) {
+     $xls_headers.push($language.iso_code)
+
+     if ($xls_headers.length > $languages.length) {
+     $xls_sheet['data'].push($xls_headers);
+
+     $projectKeys.forEach(function ($key) {
+     mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY(?, ?);", [project_id, $key.id], function ($error, $translations, $fields) {
+     var $xls_row = [$key.code];
+
+     $translations.forEach(function ($translation) {
+     $xls_row.push($translation.value);
+
+     if ($xls_row.length > $languages.length) {
+     $xls_sheet['data'].push($xls_row);
+
+     if ($xls_sheet['data'].length > $projectKeys.length) {
+     $xls_data.push($xls_sheet);
+
+     $response.setHeader('Content-Type', 'application/vnd.ms-excel');
+     $response.setHeader('Content-Disposition', 'attachment; filename=' + request_uuid + '.xlsx');
+
+     $response.write(xlsx.build($xls_data), 'binary');
+
+     $response.end();
+     }
+     }
+     });
+     });
+     });
+     }
+     });
+     });
+     });
+     });*/
 
 
     // ###########################################################################
