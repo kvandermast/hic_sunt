@@ -61,14 +61,18 @@
 <div class="container-fluid">
     <div class="panel panel-default" ng-repeat="section in matrix">
         <!-- Default panel contents -->
-        <div class="panel-heading">{{section.section}}</div>
-        <!-- div class="panel-body">
-          <p>...</p>
-        </div-->
-
-        <table class="table table-condensed table-hover">
-            <thead>
-            <tr>
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <a data-toggle="collapse" data-target="#panelSection{{section.section_id}}">
+                    {{section.section}}
+                </a>
+            </h3>
+        </div>
+        <div id="panelSection{{section.section_id}}" class="panel-body panel-collapse collapse">
+            <table
+                    class="table table-condensed table-hover">
+                <thead>
+                <tr>
                     <th>Key</th>
                     <th ng-repeat="language in languages">
                         <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
@@ -76,24 +80,25 @@
                     </th>
                 </tr>
                 </thead>
-            <tbody>
-            <tr ng-repeat="key in section.projectKeys">
-                <td>
-                    <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
-                </td>
-                <td ng-repeat="language in languages"
-                    ng-class="getCssStyle(section.translations[key.id][language.id])">
-                    <div ng-switch on="section.translations[key.id][language.id]">
-                        <div ng-switch-when="true">
-                            <i class="fa fa-check"></i>
+                <tbody>
+                <tr ng-repeat="key in section.projectKeys">
+                    <td>
+                        <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
+                    </td>
+                    <td ng-repeat="language in languages"
+                        ng-class="getCssStyle(section.translations[key.id][language.id])">
+                        <div ng-switch on="section.translations[key.id][language.id]">
+                            <div ng-switch-when="true">
+                                <i class="fa fa-check"></i>
+                            </div>
+                            <div ng-switch-default>
+                                <i class="fa fa-question"></i>
+                            </div>
                         </div>
-                        <div ng-switch-default>
-                            <i class="fa fa-question"></i>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
