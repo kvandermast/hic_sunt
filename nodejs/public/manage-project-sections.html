@@ -20,12 +20,7 @@
 
 <div class="container">
     <div class="row">
-        <form class="navbar-form navbar-right" ng-submit="createSection()">
-            <div class="form-group">
-                <input type="text" class="form-control" ng-model="name" placeholder="New section">
-            </div>
-            <button type="submit" class="btn btn-default">Save</button>
-        </form>
+
     </div>
     <div class="row" style="padding-bottom: 15px">
         <form>
@@ -44,13 +39,32 @@
                                ng-change="updateSection(section)"
                                placeholder="Name of section"
                                name="name"
-                               class="form-control"/></td>
+                               class="form-control"/>
+                    </td>
                     <td>
-                        <span class="glyphicon glyphicon-trash"
-                              aria-hidden="true"
-                              ng-click="deleteSection(section)"></span>
+                        <button type="button" class="btn btn-primary" aria-label="Save"
+                                ng-click="updateSection(section)">
+                            <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+                        </button>
+                        <button type="button" class="btn btn-danger" aria-label="Delete"
+                                ng-click="deleteSection(section)">
+                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+                        </button>
                     </td>
                 </tr>
+
+                <tr>
+                    <td>
+                        <input type="text"
+                               class="form-control"
+                               ng-model="name"
+                               placeholder="New section">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" ng-click="createSection()">Save</button>
+                    </td>
+                </tr>
+
                 </tbody>
             </table>
         </form>

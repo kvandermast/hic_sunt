@@ -11,6 +11,7 @@ DROP PROCEDURE IF EXISTS R_FETCH_ALL_LANGUAGES $$
 DROP PROCEDURE IF EXISTS R_FETCH_ALL_PROJECT_KEYS $$
 DROP PROCEDURE IF EXISTS R_FETCH_PROJECT_KEY_BY_ID $$
 DROP PROCEDURE IF EXISTS R_CREATE_PROJECT_KEY $$
+DROP PROCEDURE IF EXISTS R_UPDATE_PROJECT_KEY $$
 
 DROP PROCEDURE IF EXISTS R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE $$
 DROP PROCEDURE IF EXISTS R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_KEY $$
@@ -105,6 +106,18 @@ BEGIN
     CALL R_FETCH_PROJECT_KEY_BY_ID(last_insert_id());
 END $$
 
+CREATE PROCEDURE R_UPDATE_PROJECT_KEY(IN p_id BIGINT, IN p_project_id BIGINT, IN p_section_id BIGINT, IN p_name VARCHAR(255))
+BEGIN
+	UPDATE 	T_PROJECT_KEYS
+    SET		code = p_name,
+			project_section_id = p_section_id
+	WHERE	id = p_id
+			AND project_id = p_project_id
+	LIMIT	1;
+    
+    SELECT "OK";
+END $$
+
 CREATE PROCEDURE R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(IN p_project_id BIGINT, IN p_language_id BIGINT)
 BEGIN
 	SELECT 	l.id as language_id, k.id as project_key_id, k.code, t.value, l.iso_code, l.name as `language`
@@ -176,7 +189,7 @@ BEGIN
 		SELECT 	ps.id, ps.name
         FROM	T_PROJECT_SECTIONS ps, T_PROJECTS p
         WHERE	p.id = p_project_id AND ps.project_id = p.id
-        ORDER BY p.name;
+        ORDER BY ps.name;
 END $$
 
 CREATE PROCEDURE R_CREATE_PROJECT_SECTION(IN p_project_id BIGINT, IN p_name VARCHAR(255))
