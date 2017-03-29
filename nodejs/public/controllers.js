@@ -24,15 +24,41 @@ hicControllers.controller('projectsController', ['$scope', 'Project', '$http',
     }
 ]);
 
-hicControllers.controller('translationsController', ['$scope', 'Project', 'ProjectKey', 'ProjectTranslationsMatrix', 'Language', '$routeParams', '$http',
-    function ($scope, Project, ProjectKey, ProjectTranslationsMatrix, Language, $routeParams, $http) {
+hicControllers.controller('translationsController', ['$scope', 'Project', 'ProjectKey', 'ProjectSection', 'ProjectTranslationsMatrix', 'Language', '$routeParams', '$http',
+    function ($scope, Project, ProjectKey, ProjectSection, ProjectTranslationsMatrix, Language, $routeParams, $http) {
         var project_id = $routeParams.project_id;
+
+        var $sections = ProjectSection.query({"project_id": project_id});
 
         $scope.project = Project.get({"project_id": project_id});
         $scope.languages = Language.query();
-        $scope.keys = ProjectKey.query({"project_id": project_id});
-        $scope.matrix = ProjectTranslationsMatrix.get({"project_id": project_id});
+        // $scope.keys = ProjectKey.query({"project_id": project_id});
 
+
+        var matrix = [];
+
+        var $uncategorized = ProjectTranslationsMatrix.get({"project_id": project_id});
+        matrix.push({
+            "section": "No section assigned",
+            "section_id": null,
+            "projectKeys": ProjectKey.query({"project_id": project_id, "project_section_id": -1}),
+            "translations": $uncategorized
+        });
+
+        $sections.$promise.then(function($results) {
+            angular.forEach($results, function($section){
+                var $translations = ProjectTranslationsMatrix.get({"project_id": project_id, "project_section_id": $section.id});
+
+                matrix.push({
+                    "section": $section.name,
+                    "section_id" : $section.id,
+                    "projectKeys": ProjectKey.query({"project_id": project_id, "project_section_id": $section.id}),
+                    "translations" : $translations
+                });
+            });
+        });
+
+        $scope.matrix = matrix;
 
         $scope.createKey = function () {
             var name = $scope.keyName;
@@ -46,6 +72,10 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             $scope.keys = ProjectKey.query({"project_id": project_id});
             $scope.keyName = '';
         };
+
+        $scope.getCssStyle = function($val) {
+            return $val ? "text-center bg-success text-success" : "text-center bg-warning text-muted";
+        }
     }
 ]);
 

@@ -78,6 +78,7 @@ module.exports = function (app) {
     app.get('/api/project/keys', function ($request, $response) {
         var project_id = parseFloat($request.query.project_id);
         var key_id = parseFloat($request.query.id);
+        var section_id = parseFloat($request.query.project_section_id);
 
         if (key_id) {
             mysql.queryRow("CALL R_FETCH_PROJECT_KEY_BY_ID(?);", [key_id])
@@ -85,10 +86,17 @@ module.exports = function (app) {
                     $response.json($data);
                 })
         } else {
-            mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
-                .then(function ($data) {
-                    $response.json($data);
-                });
+            if(section_id && section_id > 0) {
+                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, section_id])
+                    .then(function ($data) {
+                        $response.json($data);
+                    });
+            } else {
+                mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
+                    .then(function ($data) {
+                        $response.json($data);
+                    });
+            }
         }
     });
 
@@ -115,13 +123,22 @@ module.exports = function (app) {
      * Create the translation matrix for the controller. It maps the keys with the languages for the provided project.
      * The values of the matrix will be true or false, depending on the fact if the translation is given.
      */
-    app.get('/api/project/:project_id/matrix', function ($request, $response) {
-        var project_id = parseFloat($request.params.project_id);
+    app.get('/api/project/matrix', function ($request, $response) {
+        var project_id = parseFloat($request.query.project_id);
+        var section_id = parseFloat($request.query.project_section_id);
 
         var matrix = {};
         console.log("Building matrix");
 
-        mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
+        var sql = "CALL R_FETCH_ALL_PROJECT_KEYS(?);";
+        var sql_args = [project_id];
+
+        if(section_id) {
+            sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?); ";
+            sql_args = [project_id,section_id];
+        }
+
+        mysql.query(sql, sql_args)
             .map(function ($key) {
                 matrix[$key.id] = [];
 

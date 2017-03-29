@@ -59,9 +59,9 @@
 </div>
 
 <div class="container-fluid">
-    <div class="panel panel-default">
+    <div class="panel panel-default" ng-repeat="section in matrix">
         <!-- Default panel contents -->
-        <div class="panel-heading">General</div>
+        <div class="panel-heading">{{section.section}}</div>
         <!-- div class="panel-body">
           <p>...</p>
         </div-->
@@ -69,25 +69,26 @@
         <table class="table table-condensed table-hover">
             <thead>
             <tr>
-                <th>Key</th>
-                <th ng-repeat="language in languages">
-                    <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
-                       role="button">{{language.iso_code}}</a>
-                </th>
-            </tr>
-            </thead>
+                    <th>Key</th>
+                    <th ng-repeat="language in languages">
+                        <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
+                           role="button">{{language.iso_code}}</a>
+                    </th>
+                </tr>
+                </thead>
             <tbody>
-            <tr ng-repeat="key in keys">
+            <tr ng-repeat="key in section.projectKeys">
                 <td>
                     <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
                 </td>
-                <td ng-repeat="language in languages" class="text-center">
-                    <div ng-switch on="matrix[key.id][language.id]">
+                <td ng-repeat="language in languages"
+                    ng-class="getCssStyle(section.translations[key.id][language.id])">
+                    <div ng-switch on="section.translations[key.id][language.id]">
                         <div ng-switch-when="true">
-                            <i class="fa fa-check" style="color: green;"></i>
+                            <i class="fa fa-check"></i>
                         </div>
                         <div ng-switch-default>
-                            <i class="fa fa-question" style="color: orange;"></i>
+                            <i class="fa fa-question"></i>
                         </div>
                     </div>
                 </td>

@@ -30,7 +30,12 @@ hicServices.factory('ProjectTranslations', ['$resource',
 
 hicServices.factory('ProjectTranslationsMatrix', ['$resource',
     function ($resource) {
-        return $resource('/api/project/:project_id/matrix', {}, {});
+        return $resource('/api/project/matrix', {}, {
+            update: {method: 'PUT'},
+            query: {method: 'GET', isArray: true},
+            get: {method: 'GET'},
+            delete: {method: 'DELETE'}
+        });
     }
 ]);
 
