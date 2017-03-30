@@ -32,16 +32,16 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
 
         $scope.project = Project.get({"project_id": project_id});
         $scope.languages = Language.query();
-        // $scope.keys = ProjectKey.query({"project_id": project_id});
-
 
         var matrix = [];
 
         var $uncategorized = ProjectTranslationsMatrix.get({"project_id": project_id});
+        var $keys = ProjectKey.query({"project_id": project_id, "project_section_id": -1});
+
         matrix.push({
             "section": "No section assigned",
             "section_id": null,
-            "projectKeys": ProjectKey.query({"project_id": project_id, "project_section_id": -1}),
+            "projectKeys": $keys,
             "translations": $uncategorized
         });
 
@@ -49,10 +49,12 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             angular.forEach($results, function($section){
                 var $translations = ProjectTranslationsMatrix.get({"project_id": project_id, "project_section_id": $section.id});
 
+                var projectKeys = ProjectKey.query({"project_id": project_id, "project_section_id": $section.id});
+
                 matrix.push({
                     "section": $section.name,
                     "section_id" : $section.id,
-                    "projectKeys": ProjectKey.query({"project_id": project_id, "project_section_id": $section.id}),
+                    "projectKeys": projectKeys,
                     "translations" : $translations
                 });
             });

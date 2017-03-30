@@ -147,6 +147,7 @@ BEGIN
 			RIGHT JOIN (T_PROJECT_TRANSLATIONS tpt,  T_LANGUAGES tl) ON (tpt.project_key_id = k.id AND tpt.language_id = tl.id AND tl.iso_code='EN')
 	WHERE 	k.project_id = p_project_id
 			AND l.id = p_language_id
+            AND IFNULL(k.project_section_id, -1) = IFNULL(p_section_id, -1)
 	ORDER 	BY k.code;
 END $$
 
