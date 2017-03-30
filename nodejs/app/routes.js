@@ -91,7 +91,7 @@ module.exports = function (app) {
                         $response.json($data);
                     });
             } else {
-                mysql.query("CALL R_FETCH_ALL_PROJECT_KEYS(?);", [project_id])
+                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, null])
                     .then(function ($data) {
                         $response.json($data);
                     });
@@ -129,11 +129,10 @@ module.exports = function (app) {
         var matrix = {};
         console.log("Building matrix");
 
-        var sql = "CALL R_FETCH_ALL_PROJECT_KEYS(?);";
-        var sql_args = [project_id];
+        var sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);";
+        var sql_args = [project_id, null];
 
         if (section_id) {
-            sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?); ";
             sql_args = [project_id, section_id];
         }
 
@@ -373,10 +372,11 @@ module.exports = function (app) {
 
                                     $response.end();
 
-                                    filesystem.rmdirAsync(path.join(EXPORT_FOLDER, request_uuid))
-                                        .then(function () {
-                                            console.log("Completed rmdir ", EXPORT_FOLDER + '/' + request_uuid);
-                                        })
+                                    //TODO: remove contents of export folder
+                                    /*filesystem.rmdirAsync(path.join(EXPORT_FOLDER, request_uuid))
+                                     .then(function () {
+                                     console.log("Completed rmdir ", EXPORT_FOLDER + '/' + request_uuid);
+                                     })*/
                                 });
                         });
 

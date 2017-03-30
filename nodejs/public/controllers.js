@@ -35,16 +35,6 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
 
         var matrix = [];
 
-        var $uncategorized = ProjectTranslationsMatrix.get({"project_id": project_id});
-        var $keys = ProjectKey.query({"project_id": project_id, "project_section_id": -1});
-
-        matrix.push({
-            "section": "No section assigned",
-            "section_id": null,
-            "projectKeys": $keys,
-            "translations": $uncategorized
-        });
-
         $sections.$promise.then(function($results) {
             angular.forEach($results, function($section){
                 var $translations = ProjectTranslationsMatrix.get({"project_id": project_id, "project_section_id": $section.id});
