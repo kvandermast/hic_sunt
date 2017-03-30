@@ -365,14 +365,19 @@ module.exports = function (app) {
                         // if the file is closed (finalized) sent hte contents to the output stream
                         output.on('close', function () {
                             filesystem.readFileAsync(zipfile, 'binary')
-                                .then(function($content) {
-                                $response.setHeader('Content-Type', 'application/zip');
-                                $response.setHeader('Content-Disposition', 'attachment; filename=' + $project.name + '.zip');
+                                .then(function ($content) {
+                                    $response.setHeader('Content-Type', 'application/zip');
+                                    $response.setHeader('Content-Disposition', 'attachment; filename=' + $project.name + '.zip');
 
-                                $response.write($content, 'binary');
+                                    $response.write($content, 'binary');
 
-                                $response.end();
-                            });
+                                    $response.end();
+
+                                    filesystem.rmdirAsync(path.join(EXPORT_FOLDER, request_uuid))
+                                        .then(function () {
+                                            console.log("Completed rmdir ", EXPORT_FOLDER + '/' + request_uuid);
+                                        })
+                                });
                         });
 
                         var zipArchive = archiver('zip', {
