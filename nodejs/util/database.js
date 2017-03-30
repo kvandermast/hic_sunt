@@ -131,7 +131,6 @@ var queryRow = function ($sql, $params) {
                             $result = $result.slice(0, $result.length - 1);
                         }
 
-
                         if ($rows && $rows.length >= 1) {
                             $result = $rows.shift(); //take the first element
                             $result = $result[0];
