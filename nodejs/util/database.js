@@ -8,7 +8,6 @@ var Promise = require('bluebird');
 var pool = mysql.createPool(settings.mysql);
 
 
-
 pool.getConnection(function ($err, $connection) {
     // connected! (unless `err` is set)
 
@@ -70,7 +69,6 @@ var many = function ($sql, $params, $callback) {
                 }
             } else {
                 $result = [];
-
             }
 
             connection.release();
@@ -80,16 +78,16 @@ var many = function ($sql, $params, $callback) {
     });
 };
 
-var query = function($sql, $params) {
-    return new Promise(function(resolve, reject) {
+var query = function ($sql, $params) {
+    return new Promise(function (resolve, reject) {
         console.log("Querying <" + $sql + "> with parameters: " + JSON.stringify($params));
 
         pool.getConnection(function (err, connection) {
-            if(err) {
+            if (err) {
                 reject(err);
             } else {
                 connection.query($sql, $params, function ($error, $rows, $fields) {
-                    if($error) {
+                    if ($error) {
                         console.log("[ERROR SQL]", $sql, $params, $error);
 
                         reject($error);
@@ -112,17 +110,18 @@ var query = function($sql, $params) {
     });
 };
 
-var queryRow = function($sql, $params) {
-    return new Promise(function(resolve, reject) {
+var queryRow = function ($sql, $params) {
+    return new Promise(function (resolve, reject) {
         console.log("Querying <" + $sql + "> with parameters: " + JSON.stringify($params));
 
         pool.getConnection(function (err, connection) {
-            if(err) {
+            if (err) {
                 reject(err);
             } else {
                 connection.query($sql, $params, function ($error, $rows, $fields) {
-                    if($error) {
-                        console.log($error);
+                    if ($error) {
+
+                        console.log("Error with <", $sql, "> using params <", $params, "> --- ", $error);
 
                         reject($error);
                     } else {

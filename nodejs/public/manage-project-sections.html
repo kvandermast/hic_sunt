@@ -32,7 +32,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="section in sections">
+                <tr ng-repeat="section in sections"
+                    ng-if="section.id != null">
                     <td><input type="text"
                                value="{{section.name}}"
                                ng-model="section.name"

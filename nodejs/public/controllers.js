@@ -214,11 +214,15 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
                         var data = new Import();
                         data.project_id = $projectId;
                         data.language_id = $languageId;
-                        data.type = $scope.import_type;
+                        data.type = $scope.import_type.toUpperCase();
 
                         if ($scope.import_type.toUpperCase() === 'ANDROID') {
-                            data.type = 'ANDROID';
                             data.xml = result;
+                            data.$save();
+                        } else if ($scope.import_type.toUpperCase() === 'IOS') {
+
+                        } else if ($scope.import_type.toUpperCase() === 'XLS') {
+                            data.xls = btoa(result);
                             data.$save();
                         }
                     };

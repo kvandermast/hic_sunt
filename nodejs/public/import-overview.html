@@ -10,12 +10,19 @@
         </div><!-- /.container-fluid -->
     </nav>
 </div>
+
 <div class="container-fluid">
     <ol class="breadcrumb">
         <li><a href="#/projects">Projects</a></li>
         <li><a href="#/translations/{{project.id}}">{{project.name}}</a></li>
         <li class="active">Import from: {{import_type}}</li>
     </ol>
+
+    <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-fire" aria-hidden="true"></span>
+        <strong>Warning!</strong> Importing translations will overwrite the existing values for the selected project.
+        This change is irreversible!
+    </div>
 
     <form>
         <table class="table table-striped">

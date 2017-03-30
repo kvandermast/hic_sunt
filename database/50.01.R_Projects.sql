@@ -184,6 +184,7 @@ BEGIN
     WHERE	id = p_project_id
     LIMIT	0,1;
     
+    
     IF v_language_id IS NOT NULL AND v_project_id IS NOT NULL 
     THEN
 		SELECT 	id INTO v_project_key_id
@@ -191,6 +192,8 @@ BEGIN
         WHERE	project_id = v_project_id
 				AND upper(code) = upper(p_name)
 		LIMIT 	0,1;
+        
+        
         
         -- CREATE PROJECT KEY IF NOT FOUND
         IF v_project_key_id IS NULL 
@@ -202,9 +205,11 @@ BEGIN
 			SET v_project_key_id = last_insert_id();
         END IF;
         
-        INSERT INTO T_PROJECT_TRANSLATIONS(project_key_id, language_id, value)
+        INSERT INTO T_PROJECT_TRANSLATIONS(project_key_id, language_id, `value`)
         VALUES(v_project_key_id, v_language_id, p_value)
         ON DUPLICATE KEY UPDATE `value` = p_value;
+	
+		SELECT v_project_id, v_language_id, v_project_key_id, ROW_COUNT();
     END IF;
 END $$
 

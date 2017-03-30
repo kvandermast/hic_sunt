@@ -3,6 +3,7 @@ var xmlbuilder = require('xmlbuilder');
 var uuid = require('node-uuid');
 var fs = require('fs');
 var Bluebird = require('bluebird');
+var path = require('path');
 
 const EXPORT_FOLDER = __dirname + '/../../fs/';
 
@@ -328,11 +329,45 @@ module.exports = function (app) {
                                         header: 'Code',
                                         key: 'code',
                                         width: 30,
-                                        style: {font: {name: 'Arial Black', color: {argb: 'FF3F3FBF'}, bold: true}}
+                                        style: {
+                                            font: {
+                                                name: 'Arial',
+                                                color: {argb: 'FF3F3FBF'},
+                                                bold: true
+                                            }
+                                        }
                                     },
-                                    {header: 'Original', key: 'original', width: 40},
-                                    {header: 'Translation', key: 'translation', width: 40 /*, outlineLevel: 1*/}
+                                    {
+                                        header: 'Original',
+                                        key: 'original',
+                                        width: 40,
+                                        outlineLevel: 1,
+                                        style: {
+                                            font: {
+                                                name: 'Arial',
+                                                color: {argb: 'FF3F3FBF'}
+                                            }
+                                        },
+                                        wrapText: true
+                                    },
+                                    {
+                                        header: 'Translation',
+                                        key: 'translation',
+                                        width: 40,
+                                        wrapText: true,
+                                        font: {
+                                            name: 'Arial',
+                                        }
+                                    }
                                 ];
+
+                                worksheet.getRow(1).font = {
+                                    name: 'Arial',
+                                    family: 4,
+                                    size: 16,
+                                    underline: 'double',
+                                    bold: true
+                                };
 
                                 return mysql.query("CALL R_FETCH_PROJECT_TRANSLATIONS_FOR_EXPORT(?,?,?); ", [$_project_id, $language.id, $section.id])
                                     .each(function ($data) {
@@ -344,7 +379,6 @@ module.exports = function (app) {
                                     });
                             })
                             .then(function () {
-                                console.log("Writing the workbook");
                                 // $response.write(workbook.xlsx, 'binary');
                                 var $xls_fname = $project.name + '-' + $language.iso_code + ".xlsx";
                                 var $xls_name = EXPORT_FOLDER + request_uuid + "/" + $xls_fname;
@@ -355,7 +389,6 @@ module.exports = function (app) {
                             });
                     })
                     .then(function () {
-                        var path = require('path');
                         var archiver = require('archiver');
 
                         var zipfile = path.join(EXPORT_FOLDER, request_uuid, $project.name + '.zip');
@@ -413,6 +446,7 @@ module.exports = function (app) {
 
         var type = $request.body.type;
 
+        // IMPORT ANDROID RESOURCE FILE
         if (type.toUpperCase() === 'ANDROID') {
             var $_xml = $request.body.xml;
 
@@ -433,6 +467,50 @@ module.exports = function (app) {
             });
 
             $response.json({'status': 'PROCESSING'});
+        } else if (type.toUpperCase() === 'XLS') {
+            var Excel = require('exceljs');
+            var filesystem = Bluebird.promisifyAll(require("fs"));
+            var request_uuid = uuid.v4();
+
+            var $_xls_buffer = new Buffer($request.body.xls, 'base64');
+
+            var $_xls_file = path.join(EXPORT_FOLDER, request_uuid + '.xlsx');
+
+            filesystem.writeFileAsync($_xls_file, $_xls_buffer)
+                .then(function () {
+                    console.log("Saved file ", $_xls_file);
+
+                    // read from a file
+                    var workbook = new Excel.Workbook();
+                    const CODE = 1;
+                    const TRANSLATION = 3;
+
+                    return workbook.xlsx.readFile($_xls_file)
+                        .then(function () {
+                            // use workbook
+                            workbook.eachSheet(function (worksheet, sheetId) {
+                                var row = 1;
+
+                                while (row++ < worksheet.rowCount) {
+                                    var $_row = worksheet.getRow(row);
+                                    var code = $_row.getCell(CODE).value;
+                                    var translation = $_row.getCell(TRANSLATION).value;
+
+                                    mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [ $_project_id, $_language_id, code, translation ])
+                                        .then(function($data) {})
+                                        .catch(function($error) { console.log($error)});
+                                }
+                            });
+
+                            $response.end();
+
+                        });
+
+                    //TODO: remove file once import is completed
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });
         }
     });
 
