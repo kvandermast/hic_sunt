@@ -26,81 +26,97 @@
     </ol>
 </div>
 
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-1" style="padding-bottom: 15px;">
-            <div class="dropdown">
-                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="true">
-                    Manage {{project.name}}
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                    <li class="dropdown-header">Settings</li>
-                    <li><a href="/#/manage/sections/project/{{project.id}}">Manage sections</a></li>
-                    <li><a href="/#/manage/project/{{project.id}}">Project settings</a></li>
-                    <li role="separator" class="divider"></li>
+    <div class="col-md-3">
+        <div id="search" class="form-group">
+            <input ng-model="query" id="searchProject" class="form-control"></p>
+        </div>
 
-                    <li class="dropdown-header">Export translations</li>
-                    <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
-                    <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
-                    <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
+        <div class="list-group">
+            <a
+                    ng-repeat="proj in projects | filter:query"
+                    href="#/translations/{{proj.id}}"
+                    class="list-group-item"
+                    ng-class="isProjectSelectedCss(proj)">
+                <h4 class="list-group-item-heading">{{proj.name}}</h4>
+                <p class="list-group-item-text">{{proj.description}}</p>
+            </a>
+        </div>
+    </div>
 
-                    <li role="separator" class="divider"></li>
-                    <li class="dropdown-header">Import translations</li>
-                    <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>
-                    <li><a href="/#/import/ios/project/{{project.id}}">from iOS</a></li>
-                    <li><a href="/#/import/xls/project/{{project.id}}">from Excel</a></li>
+    <div class="col-md-9">
+        <div class="dropdown" style="padding-bottom: 15px">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                    data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="true">
+                Manage {{project.name}}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <li class="dropdown-header">Settings</li>
+                <li><a href="/#/manage/sections/project/{{project.id}}">Manage sections</a></li>
+                <li><a href="/#/manage/project/{{project.id}}">Project settings</a></li>
+                <li role="separator" class="divider"></li>
 
-                </ul>
+                <li class="dropdown-header">Export translations</li>
+                <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
+                <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
+                <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
+
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Import translations</li>
+                <li><a href="/#/import/android/project/{{project.id}}">from Android</a></li>
+                <li><a href="/#/import/ios/project/{{project.id}}">from iOS</a></li>
+                <li><a href="/#/import/xls/project/{{project.id}}">from Excel</a></li>
+            </ul>
+        </div>
+
+        <div class="panel panel-default" ng-repeat="section in matrix">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <span class="badge">0</span>
+
+                    <a data-toggle="collapse" data-target="#panelSection{{section.section_id}}">
+                        {{section.section}}
+                    </a>
+                </h3>
+            </div>
+            <div id="panelSection{{section.section_id}}" class="panel-body panel-collapse collapse">
+                <table
+                        class="table table-condensed table-hover">
+                    <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th ng-repeat="language in languages">
+                            <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
+                               role="button">{{language.iso_code}}</a>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="key in section.projectKeys">
+                        <td>
+                            <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
+                        </td>
+                        <td ng-repeat="language in languages"
+                            ng-class="getCssStyle(section.translations[key.id][language.id])">
+                            <div ng-switch on="section.translations[key.id][language.id]">
+                                <div ng-switch-when="true">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div ng-switch-default>
+                                    <i class="fa fa-question"></i>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
 
-<div class="container-fluid">
-    <div class="panel panel-default" ng-repeat="section in matrix">
-        <!-- Default panel contents -->
-        <div class="panel-heading">
-            <h3 class="panel-title">
-                <span class="badge">0</span>
 
-                <a data-toggle="collapse" data-target="#panelSection{{section.section_id}}">
-                     {{section.section}}
-                </a>
-            </h3>
-        </div>
-        <div id="panelSection{{section.section_id}}" class="panel-body panel-collapse collapse">
-            <table
-                    class="table table-condensed table-hover">
-                <thead>
-                <tr>
-                    <th>Key</th>
-                    <th ng-repeat="language in languages">
-                        <a href="#/translations/by-lang/{{project.id}}/{{language.id}}"
-                           role="button">{{language.iso_code}}</a>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="key in section.projectKeys">
-                    <td>
-                        <a href="#/translations/by-key/{{project.id}}/{{key.id}}" role="button">{{key.code}}</a>
-                    </td>
-                    <td ng-repeat="language in languages"
-                        ng-class="getCssStyle(section.translations[key.id][language.id])">
-                        <div ng-switch on="section.translations[key.id][language.id]">
-                            <div ng-switch-when="true">
-                                <i class="fa fa-check"></i>
-                            </div>
-                            <div ng-switch-default>
-                                <i class="fa fa-question"></i>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>

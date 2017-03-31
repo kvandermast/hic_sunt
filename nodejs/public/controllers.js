@@ -31,21 +31,25 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
         var $sections = ProjectSection.query({"project_id": project_id});
 
         $scope.project = Project.get({"project_id": project_id});
+        $scope.projects = Project.query();
         $scope.languages = Language.query();
 
         var matrix = [];
 
-        $sections.$promise.then(function($results) {
-            angular.forEach($results, function($section){
-                var $translations = ProjectTranslationsMatrix.get({"project_id": project_id, "project_section_id": $section.id});
+        $sections.$promise.then(function ($results) {
+            angular.forEach($results, function ($section) {
+                var $translations = ProjectTranslationsMatrix.get({
+                    "project_id": project_id,
+                    "project_section_id": $section.id
+                });
 
                 var projectKeys = ProjectKey.query({"project_id": project_id, "project_section_id": $section.id});
 
                 matrix.push({
                     "section": $section.name,
-                    "section_id" : $section.id,
+                    "section_id": $section.id,
                     "projectKeys": projectKeys,
-                    "translations" : $translations
+                    "translations": $translations
                 });
             });
         });
@@ -65,8 +69,16 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             $scope.keyName = '';
         };
 
-        $scope.getCssStyle = function($val) {
+        $scope.getCssStyle = function ($val) {
             return $val ? "text-center bg-success text-success" : "text-center bg-warning text-muted";
+        }
+
+        $scope.isProjectSelectedCss = function ($project) {
+            if ($project.id == $routeParams.project_id) {
+                return "active";
+            } else {
+                return "";
+            }
         }
     }
 ]);
@@ -123,15 +135,15 @@ hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'P
         $scope.translations = ProjectTranslations.query({"project_id": project_id, "key_id": key_id});
 
         $scope.updateProjectKey = function ($key) {
-            $key.$update(function(){
+            $key.$update(function () {
                 $scope.projectKey = ProjectKey.get({"id": key_id, "project_id": project_id});
             });
         };
 
-        $scope.deleteProjectKey = function($key) {
-            if(confirm("Are you sure you want to delete '" + $key.code + "'?")){
-                $key.$delete(function() {
-                   //ignore
+        $scope.deleteProjectKey = function ($key) {
+            if (confirm("Are you sure you want to delete '" + $key.code + "'?")) {
+                $key.$delete(function () {
+                    //ignore
                 });
             }
         }
