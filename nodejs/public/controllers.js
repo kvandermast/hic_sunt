@@ -130,6 +130,7 @@ hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'P
         var key_id = $routeParams.key_id;
 
         $scope.projectKey = ProjectKey.get({"id": key_id, "project_id": project_id});
+        $scope.projectKeys = ProjectKey.query({"project_id": project_id});
         $scope.project = Project.get({"project_id": project_id});
         $scope.sections = ProjectSection.query({"project_id": project_id});
         $scope.translations = ProjectTranslations.query({"project_id": project_id, "key_id": key_id});
@@ -166,6 +167,10 @@ hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'P
 
             $scope.translations = ProjectTranslations.query({"project_id": project_id, "language_id": language_id});
         }
+
+        $scope.getSelectedKeyCss = function($key) {
+            return $key.id == key_id ? "active" : "";
+        };
     }
 ]);
 

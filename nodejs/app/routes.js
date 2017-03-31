@@ -265,17 +265,13 @@ module.exports = function (app) {
                     $result.forEach(function ($item) {
                         //"label" = "value";
                         var $value = $item.value ? $item.value : $item.code;
-                        //$value = $value.replace(/"/g, "\\\"");
-                        //$value = $value.replace(/'/g, "\\\'");
-
-                        //content += '"' + $item.code + '" = "' + $value + '";' + "\n";
 
                         content[$item.code] = {'text': $value};
 
                         $i++;
 
                         if ($i >= $result.length) {
-                            var i18n_compiled = i18nStringsFiles.compile(data);
+                            var i18n_compiled = i18nStringsFiles.compile(content);
 
                             zip.folder($language.iso_code.toLowerCase() + ".lproj").file('Localizable.strings', i18n_compiled);
 

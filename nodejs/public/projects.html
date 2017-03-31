@@ -3,12 +3,9 @@
     <p class="lead">Centralizing and facilitating your translation management</p>
 </div>
 
-<div class="container">
-    <div id="search" class="col-xs-10">
-        <p>Search: <input ng-model="query"></p>
-    </div>
-
+<div class="container-fluid">
     <div id="projects-list" class="row">
+
         <div class="col-md-4" style="background-color: #f0f0f0;">
             <h1>Create project</h1>
             <form ng-submit="createProject()">
@@ -36,12 +33,30 @@
             </form>
         </div>
 
-        <div class="col-md-4" ng-repeat="project in projects | filter:query | orderBy:sortOrder">
-            <h2>{{ project.name }}</h2>
-            <p>{{ project.description }} </p>
-            <p><a class="btn btn-default"
-                  href="#/translations/{{project.id}}"
-                  role="button">View details »</a></p>
+
+        <div class="col-md-8">
+            <div id="search" class="form-group">
+                <input class="form-control" ng-model="query" placeholder="Filter projects...">
+            </div>
+
+            <table class="table table-condensed table-hover">
+                <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="project in projects | filter:query | orderBy:sortOrder">
+                    <td>
+                        <a href="#/translations/{{project.id}}" role="button">{{project.name}}</a>
+                    </td>
+                    <td>
+                        {{project.description}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
