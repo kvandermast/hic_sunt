@@ -56,6 +56,8 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
 
         $scope.matrix = matrix;
 
+
+
         $scope.createKey = function () {
             var name = $scope.keyName;
 
@@ -71,7 +73,7 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
 
         $scope.getCssStyle = function ($val) {
             return $val ? "text-center bg-success text-success" : "text-center bg-warning text-muted";
-        }
+        };
 
         $scope.isProjectSelectedCss = function ($project) {
             if ($project.id == $routeParams.project_id) {
@@ -79,7 +81,13 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             } else {
                 return "";
             }
-        }
+        };
+
+        $scope.getSectionKeyCount = function($section) {
+            console.log($section.projectKeys.length);
+
+            return $section.projectKeys.length;
+        };
     }
 ]);
 
@@ -168,7 +176,7 @@ hicControllers.controller('translationByKeyController', ['$scope', 'Project', 'P
             $scope.translations = ProjectTranslations.query({"project_id": project_id, "language_id": language_id});
         }
 
-        $scope.getSelectedKeyCss = function($key) {
+        $scope.getSelectedKeyCss = function ($key) {
             return $key.id == key_id ? "active" : "";
         };
     }
