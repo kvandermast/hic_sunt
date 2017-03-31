@@ -247,6 +247,7 @@ module.exports = function (app) {
     app.get('/export/ios/project/:project_id', function ($request, $response) {
         var $project_id = parseFloat($request.params.project_id);
 
+        var i18nStringsFiles = require('i18n-strings-files');
         var JSZip = require("jszip");
         var zip = new JSZip();
         var request_uuid = uuid.v4();
@@ -259,20 +260,24 @@ module.exports = function (app) {
 
                     var $i = 0;
 
-                    var content = "";
+                    var content = {};
 
                     $result.forEach(function ($item) {
                         //"label" = "value";
                         var $value = $item.value ? $item.value : $item.code;
-                        $value = $value.replace(/"/g, "\\\"");
-                        $value = $value.replace(/'/g, "\\\'");
+                        //$value = $value.replace(/"/g, "\\\"");
+                        //$value = $value.replace(/'/g, "\\\'");
 
-                        content += '"' + $item.code + '" = "' + $value + '";' + "\n";
+                        //content += '"' + $item.code + '" = "' + $value + '";' + "\n";
+
+                        content[$item.code] = {'text': $value};
 
                         $i++;
 
                         if ($i >= $result.length) {
-                            zip.folder($language.iso_code.toLowerCase() + ".lproj").file('Localizable.strings', content);
+                            var i18n_compiled = i18nStringsFiles.compile(data);
+
+                            zip.folder($language.iso_code.toLowerCase() + ".lproj").file('Localizable.strings', i18n_compiled);
 
                             $j++;
 
