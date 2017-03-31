@@ -467,7 +467,22 @@ module.exports = function (app) {
             });
 
             $response.json({'status': 'PROCESSING'});
-        } else if (type.toUpperCase() === 'XLS') {
+        }
+        else if (type.toUpperCase() === 'IOS') {
+            var $_properties = $request.body.properties;
+
+            var i18nStringsFiles = require('i18n-strings-files');
+            var $_data = i18nStringsFiles.parse($_properties);
+
+            for (var $_key in $_data) {
+                mysql.insert("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $_key, $_data[$_key]], function ($error, $result, $fields) {
+                    //ignore.
+                });
+            }
+
+            $response.json({'status': 'PROCESSING'});
+        }
+        else if (type.toUpperCase() === 'XLS') {
             var Excel = require('exceljs');
             var filesystem = Bluebird.promisifyAll(require("fs"));
             var request_uuid = uuid.v4();
@@ -496,13 +511,16 @@ module.exports = function (app) {
                                     var code = $_row.getCell(CODE).value;
                                     var translation = $_row.getCell(TRANSLATION).value;
 
-                                    mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [ $_project_id, $_language_id, code, translation ])
-                                        .then(function($data) {})
-                                        .catch(function($error) { console.log($error)});
+                                    mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, code, translation])
+                                        .then(function ($data) {
+                                        })
+                                        .catch(function ($error) {
+                                            console.log($error)
+                                        });
                                 }
                             });
 
-                            $response.end();
+                            $response.json({'status': 'PROCESSING'});
 
                         });
 

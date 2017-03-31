@@ -22,6 +22,7 @@
     "connect": "^3.3.5",
     "exceljs": "^0.4.2",
     "express": "^4.11.2",
+    "i18n-strings-files": "^1.0.2",
     "jszip": "^2.5.0",
     "jszip-utils": "0.0.2",
     "method-override": "^2.3.2",

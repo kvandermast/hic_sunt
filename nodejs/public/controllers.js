@@ -232,7 +232,8 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
                             data.xml = result;
                             data.$save();
                         } else if ($scope.import_type.toUpperCase() === 'IOS') {
-
+                            data.properties = result;
+                            data.$save();
                         } else if ($scope.import_type.toUpperCase() === 'XLS') {
                             data.xls = btoa(result);
                             data.$save();
