@@ -33,7 +33,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="section in sections"
-                    ng-if="section.id != null">
+                    ng-if="section.id > 0">
                     <td><input type="text"
                                value="{{section.name}}"
                                ng-model="section.name"

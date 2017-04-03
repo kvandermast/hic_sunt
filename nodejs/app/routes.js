@@ -4,6 +4,7 @@ var uuid = require('node-uuid');
 var fs = require('fs');
 var Bluebird = require('bluebird');
 var path = require('path');
+var Excel = require('exceljs');
 
 const EXPORT_FOLDER = __dirname + '/../../fs/';
 
@@ -86,7 +87,7 @@ module.exports = function (app) {
                     $response.json($data);
                 })
         } else {
-            if (section_id && section_id > 0) {
+            if (section_id) {
                 mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, section_id])
                     .then(function ($data) {
                         $response.json($data);
@@ -131,7 +132,7 @@ module.exports = function (app) {
         console.log("Building matrix");
 
         var sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);";
-        var sql_args = [project_id, null];
+        var sql_args = [project_id, -1]; //set section_id to -1 to fetch all unassigned values
 
         if (section_id) {
             sql_args = [project_id, section_id];
@@ -210,7 +211,8 @@ module.exports = function (app) {
 
                     $result.forEach(function ($item) {
                         //<string name="lbl_heading_about">About</string>
-                        builder.e('string', {name: $item.code}).r($item.value ? $item.value : $item.code);
+                        builder.e('string', {name: $item.code})
+                            .r($item.value ? cleanupAndroidStringValue($item.value, true) : $item.code);
 
                         $i++;
 
@@ -333,7 +335,7 @@ module.exports = function (app) {
                                         style: {
                                             font: {
                                                 name: 'Arial',
-                                                color: {argb: 'FF3F3FBF'},
+                                                color: {argb: 'FFc71616'},
                                                 bold: true
                                             }
                                         }
@@ -346,7 +348,7 @@ module.exports = function (app) {
                                         style: {
                                             font: {
                                                 name: 'Arial',
-                                                color: {argb: 'FF3F3FBF'}
+                                                color: {argb: 'FFc71616'}
                                             }
                                         },
                                         wrapText: true
@@ -357,7 +359,7 @@ module.exports = function (app) {
                                         width: 40,
                                         wrapText: true,
                                         font: {
-                                            name: 'Arial',
+                                            name: 'Arial'
                                         }
                                     }
                                 ];
@@ -367,7 +369,8 @@ module.exports = function (app) {
                                     family: 4,
                                     size: 16,
                                     underline: 'double',
-                                    bold: true
+                                    bold: true,
+                                    color: {argb: 'FFc71616'}
                                 };
 
                                 return mysql.query("CALL R_FETCH_PROJECT_TRANSLATIONS_FOR_EXPORT(?,?,?); ", [$_project_id, $language.id, $section.id])
@@ -440,6 +443,23 @@ module.exports = function (app) {
 // ###########################################################################
 // IMPORT DATA
 // ###########################################################################
+    function cleanupAndroidStringValue($val, $export) {
+        var $v = $val;
+        var $r = [
+            {'from': '\\\'', 'to': '\''}
+        ];
+
+        for (var $i = 0; $i < $r.length; $i++) {
+            var $item = $r[$i];
+
+            if ($export)
+                $v = $v.replace($item.to, $item.from);
+            else
+                $v = $v.replace($item.from, $item.to);
+        }
+
+        return $v;
+    }
 
     app.post('/api/import/', function ($request, $response) {
         var $_project_id = parseFloat($request.body.project_id);
@@ -456,11 +476,12 @@ module.exports = function (app) {
                 if (!err) {
                     result.resources.string.forEach(function (e) {
                         var $key = e.$.name;
-                        var $val = e._;
+                        var $val = cleanupAndroidStringValue(e._);
 
-                        mysql.insert("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $key, $val], function ($error, $result, $fields) {
-                            //ignore.
-                        });
+                        mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $key, $val])
+                            .catch(function ($error) {
+                                console.log($error);
+                            });
                     });
                 } else {
                     console.error(err);
@@ -483,8 +504,42 @@ module.exports = function (app) {
 
             $response.json({'status': 'PROCESSING'});
         }
+        else if (type.toUpperCase() === 'PROPERTY') {
+            var $_properties = $request.body.properties;
+
+            var $_lines = $_properties.split("\n");
+
+            for ($_row = 0; $_row < $_lines.length; $_row++) {
+                var $_line = $_lines[$_row].trim();
+
+                // ignore the comments and empty lines
+                if (!$_line.startsWith("#") && !($_line.trim() === "")) {
+                    var i = $_line.indexOf('=');
+
+                    if (i > 1) {
+                        var $_pkey = $_line.substr(0, i);
+                        var $_val = $_line.substr(i + 1).trim();
+
+                        if ($_val.endsWith('\\')) {
+                            $_val = $_val.substr(0, $_val.length - 1);
+
+                            while ($_lines[++$_row].endsWith('\\')) {
+                                $_val += "\n" + $_lines[$_row].substr(0, $_lines[$_row].length - 1);
+                            }
+                        }
+
+                        mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, $_pkey, $_val])
+                            .catch(function ($error) {
+                                console.log($error);
+                            });
+                    }
+                }
+            }
+
+            $response.json({'status': 'PROCESSING'});
+        }
         else if (type.toUpperCase() === 'XLS') {
-            var Excel = require('exceljs');
+
             var filesystem = Bluebird.promisifyAll(require("fs"));
             var request_uuid = uuid.v4();
 
@@ -509,15 +564,14 @@ module.exports = function (app) {
 
                                 while (row++ < worksheet.rowCount) {
                                     var $_row = worksheet.getRow(row);
-                                    var code = $_row.getCell(CODE).value;
-                                    var translation = $_row.getCell(TRANSLATION).value;
+                                    var code = cleanupExcelFormatting($_row.getCell(CODE));
+                                    var translation = cleanupExcelFormatting($_row.getCell(TRANSLATION));
 
                                     mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, code, translation])
-                                        .then(function ($data) {
-                                        })
-                                        .catch(function ($error) {
-                                            console.log($error)
-                                        });
+                                     .then(function ($data) {
+                                     })
+                                     .catch(function ($error) {
+                                     });
                                 }
                             });
 
@@ -532,6 +586,23 @@ module.exports = function (app) {
                 });
         }
     });
+
+
+    function cleanupExcelFormatting(codeCell) {
+        var code = codeCell.value;
+
+        if (codeCell.type === Excel.ValueType.Formula) {
+            code = codeCell.value.result;
+        } else if (codeCell.type === Excel.ValueType.RichText) {
+            code = "";
+
+            for (var $i = 0; $i < codeCell.value.richText.length; $i++) {
+                code += codeCell.value.richText[$i].text;
+            }
+        }
+
+        return code;
+    }
 
 // ###########################################################################
 // PROJECT SECTIONS

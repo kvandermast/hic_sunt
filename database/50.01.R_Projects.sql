@@ -101,11 +101,19 @@ END $$
 
 CREATE PROCEDURE R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(IN p_project_id BIGINT, IN p_section_id BIGINT)
 BEGIN
-	SELECT	*
-    FROM 	T_PROJECT_KEYS
-    WHERE	project_id = p_project_id 
-			AND IFNULL(project_section_id, -1) = IFNULL(p_section_id, -1)
-    ORDER 	BY code;
+	IF p_section_id IS NULL
+    THEN
+		SELECT	*
+		FROM 	T_PROJECT_KEYS
+		WHERE	project_id = p_project_id 
+		ORDER 	BY code;
+    ELSE
+    	SELECT	*
+		FROM 	T_PROJECT_KEYS
+		WHERE	project_id = p_project_id 
+				AND IFNULL(project_section_id, -1) = p_section_id
+		ORDER 	BY code;
+    END IF;
 END $$
 
 CREATE PROCEDURE R_CREATE_PROJECT_KEY(IN p_project_id BIGINT, IN p_name VARCHAR(255))
@@ -172,7 +180,8 @@ END $$
 
 CREATE PROCEDURE R_IMPORT_TRANSLATION(IN p_project_id BIGINT, IN p_language_id BIGINT, IN p_name VARCHAR(255), IN p_value LONGTEXT)
 BEGIN
-	DECLARE v_project_id, v_language_id, v_project_key_id BIGINT;
+	DECLARE v_project_id, v_language_id, v_project_key_id, v_section_id BIGINT;
+    DECLARE v_section_name VARCHAR(255);
 
 	SELECT	id INTO v_language_id
     FROM	T_LANGUAGES
@@ -193,13 +202,35 @@ BEGIN
 				AND upper(code) = upper(p_name)
 		LIMIT 	0,1;
         
-        
+        SET v_section_id = null;
         
         -- CREATE PROJECT KEY IF NOT FOUND
         IF v_project_key_id IS NULL 
         THEN
-			INSERT INTO T_PROJECT_KEYS(project_id, code)
-			VALUES(v_project_id, p_name)
+			-- CREATE A SECTION
+			IF INSTR(p_name, '.') > 0 
+            THEN
+				SET v_section_name = trim(SUBSTR(p_name, 1, INSTR(p_name,'.') - 1));
+                
+				SELECT 	id INTO v_section_id
+                FROM 	T_PROJECT_SECTIONS 
+                WHERE 	lower(v_section_name) = lower(name) 
+						AND project_id = v_project_id
+				LIMIT 	0,1;
+                
+                IF v_section_id IS NULL 
+                THEN
+					INSERT INTO T_PROJECT_SECTIONS(project_id, name)
+					VALUES(p_project_id, v_section_name);
+                    
+                    SET v_section_id = last_insert_id();
+                END IF;
+                
+                SELECT v_section_id, v_section_name;
+            END IF;
+            
+			INSERT INTO T_PROJECT_KEYS(project_id, project_section_id, code)
+			VALUES(v_project_id, v_section_id, p_name)
 			ON DUPLICATE KEY UPDATE code=p_name;
         
 			SET v_project_key_id = last_insert_id();
@@ -208,14 +239,12 @@ BEGIN
         INSERT INTO T_PROJECT_TRANSLATIONS(project_key_id, language_id, `value`)
         VALUES(v_project_key_id, v_language_id, p_value)
         ON DUPLICATE KEY UPDATE `value` = p_value;
-	
-		SELECT v_project_id, v_language_id, v_project_key_id, ROW_COUNT();
     END IF;
 END $$
 
 CREATE PROCEDURE R_FETCH_ALL_PROJECT_SECTIONS(IN p_project_id BIGINT)
 BEGIN
-		SELECT	NULL as id, '- No section' as name
+		SELECT	-1 as id, '- No section' as name
         UNION
 		SELECT 	ps.id, ps.name
         FROM	T_PROJECT_SECTIONS ps, T_PROJECTS p

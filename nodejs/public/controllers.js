@@ -40,10 +40,10 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             angular.forEach($results, function ($section) {
                 var $translations = ProjectTranslationsMatrix.get({
                     "project_id": project_id,
-                    "project_section_id": $section.id
+                    "project_section_id": $section.id !== null ? $section.id : -1
                 });
 
-                var projectKeys = ProjectKey.query({"project_id": project_id, "project_section_id": $section.id});
+                var projectKeys = ProjectKey.query({"project_id": project_id, "project_section_id": $section.id !== null ? $section.id : -1});
 
                 matrix.push({
                     "section": $section.name,
@@ -244,7 +244,8 @@ hicControllers.controller('importController', ['$scope', 'Language', 'Project', 
                         if ($scope.import_type.toUpperCase() === 'ANDROID') {
                             data.xml = result;
                             data.$save();
-                        } else if ($scope.import_type.toUpperCase() === 'IOS') {
+                        } else if ($scope.import_type.toUpperCase() === 'IOS'
+                                || $scope.import_type.toUpperCase() === 'PROPERTY') {
                             data.properties = result;
                             data.$save();
                         } else if ($scope.import_type.toUpperCase() === 'XLS') {
