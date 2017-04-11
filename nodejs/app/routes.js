@@ -10,9 +10,9 @@ const EXPORT_FOLDER = __dirname + '/../../fs/';
 
 
 module.exports = function (app) {
-    // ###########################################################################
-    // PROJECTS API
-    // ###########################################################################
+// ###########################################################################
+// PROJECTS API
+// ###########################################################################
     app.get('/api/projects', function ($request, $response) {
         if ($request.query.project_id) {
             var $_project_id = parseFloat($request.query.project_id);
@@ -189,9 +189,9 @@ module.exports = function (app) {
             });
     });
 
-    // ###########################################################################
-    // EXPORT
-    // ###########################################################################
+// ###########################################################################
+// EXPORT
+// ###########################################################################
     app.get('/export/android/project/:project_id', function ($request, $response) {
         var $project_id = parseFloat($request.params.project_id);
 
@@ -453,9 +453,9 @@ module.exports = function (app) {
             var $item = $r[$i];
 
             if ($export)
-                $v = $v.replace($item.to, $item.from);
+                $v = $v.replace(new RegExp($item.to, 'g'), $item.from);
             else
-                $v = $v.replace($item.from, $item.to);
+                $v = $v.replace(new RegExp($item.from, 'g'), $item.to);
         }
 
         return $v;
@@ -568,10 +568,10 @@ module.exports = function (app) {
                                     var translation = cleanupExcelFormatting($_row.getCell(TRANSLATION));
 
                                     mysql.queryRow("CALL R_IMPORT_TRANSLATION(?,?,?,?);", [$_project_id, $_language_id, code, translation])
-                                     .then(function ($data) {
-                                     })
-                                     .catch(function ($error) {
-                                     });
+                                        .then(function ($data) {
+                                        })
+                                        .catch(function ($error) {
+                                        });
                                 }
                             });
 
