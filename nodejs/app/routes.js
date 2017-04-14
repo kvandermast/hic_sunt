@@ -76,31 +76,6 @@ module.exports = function (app) {
             });
     });
 
-    app.get('/api/project/keys', function ($request, $response) {
-        var project_id = parseFloat($request.query.project_id);
-        var key_id = parseFloat($request.query.id);
-        var section_id = parseFloat($request.query.project_section_id);
-
-        if (key_id) {
-            mysql.queryRow("CALL R_FETCH_PROJECT_KEY_BY_ID(?);", [key_id])
-                .then(function ($data) {
-                    $response.json($data);
-                })
-        } else {
-            if (section_id) {
-                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, section_id])
-                    .then(function ($data) {
-                        $response.json($data);
-                    });
-            } else {
-                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, null])
-                    .then(function ($data) {
-                        $response.json($data);
-                    });
-            }
-        }
-    });
-
     app.get('/api/project/:project_id/translations', function ($request, $response) {
         var project_id = parseFloat($request.params.project_id);
         var language_id = parseFloat($request.query.language_id);
@@ -152,6 +127,31 @@ module.exports = function (app) {
             });
     });
 
+    app.get('/api/project/keys', function ($request, $response) {
+        var project_id = parseFloat($request.query.project_id);
+        var key_id = parseFloat($request.query.id);
+        var section_id = parseFloat($request.query.project_section_id);
+
+        if (key_id) {
+            mysql.queryRow("CALL R_FETCH_PROJECT_KEY_BY_ID(?);", [key_id])
+                .then(function ($data) {
+                    $response.json($data);
+                })
+        } else {
+            if (section_id) {
+                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, section_id])
+                    .then(function ($data) {
+                        $response.json($data);
+                    });
+            } else {
+                mysql.query("CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);", [project_id, null])
+                    .then(function ($data) {
+                        $response.json($data);
+                    });
+            }
+        }
+    });
+
     app.post('/api/project/keys', function ($request, $response) {
         var $_name = $request.body.name;
         var $_project_id = parseFloat($request.query.project_id);
@@ -172,6 +172,16 @@ module.exports = function (app) {
         var $_section_id = parseFloat($request.body.project_section_id);
 
         mysql.queryRow("CALL R_UPDATE_PROJECT_KEY(?,?,?,?);", [$_id, $_project_id, $_section_id, $_name])
+            .then(function ($result) {
+                $response.json($result);
+            });
+    });
+
+    app.delete('/api/project/keys', function ($request, $response) {
+        var $_id = parseFloat($request.query.id);
+        var $_project_id = parseFloat($request.query.project_id);
+
+        mysql.queryRow("CALL R_DELETE_PROJECT_KEY(?,?);", [$_id, $_project_id])
             .then(function ($result) {
                 $response.json($result);
             });
