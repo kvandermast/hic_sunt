@@ -48,6 +48,7 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
                 matrix.push({
                     "section": $section.name,
                     "section_id": $section.id,
+                    "section_count_assigned_keys": $section.count_assigned_keys,
                     "projectKeys": projectKeys,
                     "translations": $translations
                 });
@@ -81,12 +82,6 @@ hicControllers.controller('translationsController', ['$scope', 'Project', 'Proje
             } else {
                 return "";
             }
-        };
-
-        $scope.getSectionKeyCount = function($section) {
-            console.log($section.projectKeys.length);
-
-            return $section.projectKeys.length;
         };
     }
 ]);

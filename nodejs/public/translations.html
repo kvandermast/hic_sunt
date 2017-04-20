@@ -65,6 +65,7 @@
                 <li class="dropdown-header">Export translations</li>
                 <li><a href="/export/android/project/{{project.id}}">to Android</a></li>
                 <li><a href="/export/ios/project/{{project.id}}">to iOS</a></li>
+                <li><a href="/export/property/project/{{project.id}}">to Property file</a></li>
                 <li><a href="/export/xls/project/{{project.id}}">to Excel</a></li>
 
                 <li role="separator" class="divider"></li>
@@ -80,7 +81,7 @@
             <!-- Default panel contents -->
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <span class="badge">{{getSectionKeyCount(section)}}</span>
+                    <span class="badge">{{section.section_count_assigned_keys}}</span>
 
                     <a data-toggle="collapse" data-target="#panelSection{{section.section_id}}">
                         {{section.section}}
@@ -88,8 +89,7 @@
                 </h3>
             </div>
             <div id="panelSection{{section.section_id}}" class="panel-body panel-collapse collapse">
-                <table
-                        class="table table-condensed table-hover">
+                <table class="table table-condensed table-hover">
                     <thead>
                     <tr>
                         <th>Key</th>

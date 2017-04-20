@@ -104,8 +104,6 @@ module.exports = function (app) {
         var section_id = parseFloat($request.query.project_section_id);
 
         var matrix = {};
-        console.log("Building matrix");
-
         var sql = "CALL R_FETCH_PROJECT_KEY_BY_PROJECT_SECTION(?,?);";
         var sql_args = [project_id, -1]; //set section_id to -1 to fetch all unassigned values
 
@@ -438,6 +436,57 @@ module.exports = function (app) {
             });
     });
 
+    app.get('/export/property/project/:project_id', function ($request, $response) {
+        var $project_id = parseFloat($request.params.project_id);
+
+        var i18nStringsFiles = require('i18n-strings-files');
+        var JSZip = require("jszip");
+        var zip = new JSZip();
+        var request_uuid = uuid.v4();
+
+        mysql.many("CALL R_FETCH_ALL_LANGUAGES();", [], function ($error, $languages, $fields) {
+            $j = 0;
+
+            $languages.forEach(function ($language) {
+                mysql.many("CALL R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(?, ?);", [$project_id, $language.id], function ($error, $result, $fields) {
+
+                    var $i = 0;
+                    var i18n_compiled = "";
+
+                    $result.forEach(function ($item) {
+                        //label = value;
+                        var $value = $item.value ? $item.value : $item.code;
+
+                        i18n_compiled += $item.code + " = " + $value + "\n";
+                        $i++;
+
+                        if ($i >= $result.length) {
+                            zip.file('UserApplicationResources_' + $language.iso_code.toLowerCase() + '.properties', i18n_compiled);
+
+                            $j++;
+
+                            if ($j >= $languages.length) {
+                                var buffer = zip.generate({type: "nodebuffer"});
+
+                                fs.writeFile(EXPORT_FOLDER + request_uuid + ".zip", buffer, function (err) {
+                                    if (err) throw err;
+
+                                    fs.readFile(EXPORT_FOLDER + request_uuid + ".zip", 'binary', function (a_error, data) {
+                                        $response.setHeader('Content-Type', 'application/zip');
+                                        $response.setHeader('Content-Disposition', 'attachment; filename=' + request_uuid + '.zip');
+
+                                        $response.write(data, 'binary');
+
+                                        $response.end();
+                                    });
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    });
 
 // ###########################################################################
 // LANGUAGES API

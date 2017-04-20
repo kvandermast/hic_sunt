@@ -259,12 +259,18 @@ END $$
 
 CREATE PROCEDURE R_FETCH_ALL_PROJECT_SECTIONS(IN p_project_id BIGINT)
 BEGIN
-		SELECT	-1 as id, '- No section' as name
-        UNION
-		SELECT 	ps.id, ps.name
-        FROM	T_PROJECT_SECTIONS ps, T_PROJECTS p
-        WHERE	p.id = p_project_id AND ps.project_id = p.id
-        ORDER 	BY 2;
+	SELECT	-1 as id, '- No section' as name, (SELECT 	count(id) 
+											   FROM 	T_PROJECT_KEYS 
+											   WHERE 	project_id = p_project_id 
+														AND project_section_id IS NULL) as count_assigned_keys
+	UNION
+	SELECT 	ps.id, ps.name, count(pk.id)
+	FROM	T_PROJECT_SECTIONS ps, T_PROJECTS p, T_PROJECT_KEYS pk
+	WHERE	p.id = p_project_id 
+			AND ps.project_id = p.id
+			AND pk.project_id = p.id AND pk.project_section_id = ps.id
+	GROUP 	BY ps.id, ps.name
+	ORDER 	BY 2;
 END $$
 
 CREATE PROCEDURE R_CREATE_PROJECT_SECTION(IN p_project_id BIGINT, IN p_name VARCHAR(255))
