@@ -652,13 +652,29 @@ module.exports = function (app) {
 
         if (codeCell.type === Excel.ValueType.Formula) {
             code = codeCell.value.result;
+        } else if (codeCell.type === Excel.ValueType.Hyperlink) {
+            code = codeCell.value.hyperlink;
+
+            code = code.replace('mailto:', '');
+
         } else if (codeCell.type === Excel.ValueType.RichText) {
             code = "";
 
-            for (var $i = 0; $i < codeCell.value.richText.length; $i++) {
-                code += codeCell.value.richText[$i].text;
+
+            if (codeCell.value.type === Excel.ValueType.RichText) {
+                code = cleanupExcelFormatting(codeCell.value.richText)
+            } else {
+                for (var $i = 0; $i < codeCell.value.richText.length; $i++) {
+                    if (codeCell.value.richText[$i].text.type === Excel.ValueType.RichText) {
+                        code = cleanupExcelFormatting(codeCell.value.richText[$i]);
+                    } else {
+                        code += codeCell.value.richText[$i].text;
+                    }
+                }
             }
         }
+
+        console.log("CLEAN: " + code);
 
         return code;
     }
