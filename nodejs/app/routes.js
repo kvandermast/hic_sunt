@@ -220,7 +220,7 @@ module.exports = function (app) {
                     $result.forEach(function ($item) {
                         //<string name="lbl_heading_about">About</string>
                         builder.e('string', {name: $item.code})
-                            .r($item.value ? cleanupAndroidStringValue($item.value, true) : $item.code);
+                            .r($item.value ? cleanupAndroidStringValue($item.value, true) : $item.original);
 
                         $i++;
 

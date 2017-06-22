@@ -154,9 +154,10 @@ END $$
 
 CREATE PROCEDURE R_FETCH_ALL_PROJECT_TRANSLATIONS_BY_LANGUAGE(IN p_project_id BIGINT, IN p_language_id BIGINT)
 BEGIN
-	SELECT 	l.id as language_id, k.id as project_key_id, k.code, t.value, l.iso_code, l.name as `language`
+	SELECT 	l.id as language_id, k.id as project_key_id, k.code, t.value, l.iso_code, l.name as `language`, tpt.value as `original`
 	FROM 	T_PROJECT_TRANSLATIONS t
 			RIGHT JOIN (T_LANGUAGES l, T_PROJECT_KEYS k) ON (t.language_id = l.id AND t.project_key_id = k.id)
+			RIGHT JOIN (T_PROJECT_TRANSLATIONS tpt,  T_LANGUAGES tl) ON (tpt.project_key_id = k.id AND tpt.language_id = tl.id AND tl.iso_code='EN')
 	WHERE 	k.project_id = p_project_id
 			AND l.id = p_language_id
 	ORDER 	BY k.code;
